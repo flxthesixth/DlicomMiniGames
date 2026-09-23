@@ -2,6 +2,16 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { advance, newGame } from '../public/game-core.js';
 
+test('lane input stays inside three runner lanes', () => {
+  let state = newGame(7);
+  state = advance(state, { lane: 1, dt: 0 });
+  assert.equal(state.lane, 2);
+  state = advance(state, { lane: 1, dt: 0 });
+  assert.equal(state.lane, 2);
+  state = advance(state, { lane: -1, dt: 0 });
+  assert.equal(state.lane, 1);
+});
+
 test('collecting signal adds score and combo', () => {
   const state = newGame(7);
   const next = advance(state, { collect: true, dt: 1 });

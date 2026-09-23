@@ -1,17 +1,26 @@
-// DLICOM DROP — pure game state. No DOM, no canvas. Deterministic given seed + inputs.
+// DLICOM RUNNER — pure game state. No DOM, no three.js. Deterministic given seed + inputs.
+// Three lanes: index 0 (left), 1 (center), 2 (right).
+
+export const LANES = 3;
+
 export function newGame(seed = 1, shields = 0) {
   return {
     seed, shields,
+    lane: 1,
     score: 0, combo: 0, bestCombo: 0,
     multiplier: 1, surge: 0,
     distance: 0, over: false,
   };
 }
 
-export function advance(state, { collect = false, hit = false, dt = 0 }) {
+export function advance(state, { lane = 0, collect = false, hit = false, dt = 0 } = {}) {
   if (state.over) return state;
-  const next = { ...state, combo: state.combo, score: state.score, surge: state.surge };
+  const next = { ...state, score: state.score, surge: state.surge, combo: state.combo };
   next.distance = state.distance + dt;
+
+  if (lane) {
+    next.lane = Math.max(0, Math.min(LANES - 1, state.lane + lane));
+  }
 
   if (hit) {
     if (next.surge > 0) {
