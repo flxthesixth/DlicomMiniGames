@@ -16,7 +16,9 @@
 <section class="below"><div class="panel"><span>BEST RUN</span><strong id="bestPanel">0</strong></div><div class="panel"><span>SHIELD BOOST</span><strong id="shieldPanel">0 / 3</strong><div class="ref" id="refText"></div></div><div class="panel"><span>AFTER RUN</span><div class="actions"><button class="button secondary" id="share">POST SCORE ON X</button><button class="button secondary" id="banner">SAVE BANNER</button></div></div></section>
 </main><footer class="foot">DLICOM DROP · PLAY FIRST</footer></div>
 <script type="module">
-import {newGame,advance} from './game-core.js';
+// Kept inline so static hosting cannot block game startup on a module MIME/path issue.
+function newGame(seed=1,shields=0){return{seed,shields,score:0,combo:0,bestCombo:0,multiplier:1,surge:0,distance:0,over:false}}
+function advance(state,{collect=false,hit=false,dt=0}){if(state.over)return state;const next={...state,distance:state.distance+dt};if(hit){if(next.surge>0){}else if(next.shields>0){next.shields-=1;next.combo=0}else{return{...next,over:true}}}if(collect){next.combo+=1;next.bestCombo=Math.max(next.bestCombo,next.combo);if(next.combo%3===0&&next.surge<=0){next.surge=5;next.multiplier=2}next.score+=10*next.multiplier}if(next.surge>0){next.surge=Math.max(0,next.surge-dt);if(next.surge===0){next.multiplier=1;next.combo=0}}next.score+=Math.round(2*dt);return next}
 const C=document.querySelector('#game'),ctx=C.getContext('2d'),W=C.width,H=C.height;
 const el=id=>document.querySelector(id), scoreEl=el('score'),bestEl=el('best'),bestPanel=el('bestPanel'),surgeEl=el('surge'),overlay=el('overlay'),play=el('play');
 let game, player, objects, running=false,last=0, held=0, high=Number(localStorage.dlicomDropHigh||0);
