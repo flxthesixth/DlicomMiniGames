@@ -23,8 +23,8 @@ export function advance(state, { lane = 0, collect = false, hit = false, jump = 
   const next = { ...state, score: state.score, surge: state.surge, combo: state.combo };
   next.distance = state.distance + dt;
 
-  if (jump && next.jump <= 0 && next.slide <= 0) next.jump = .62; // JUMP: vaults low barriers
-  if (slide && next.slide <= 0 && next.jump <= 0) next.slide = .48; // SLIDE: ducks floating hazards
+  if (jump && next.jump <= 0 && next.slide <= 0) next.jump = .62; // JUMP: vaults ground hazards
+  if (slide && next.slide <= 0 && next.jump <= 0) next.slide = .48; // SLIDE: ducks flying hazards
   if (next.jump > 0) next.jump = Math.max(0, next.jump - dt);
   if (next.slide > 0) next.slide = Math.max(0, next.slide - dt);
 
