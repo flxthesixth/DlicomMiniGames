@@ -20,7 +20,7 @@
 function newGame(seed=1,shields=0){return{seed,shields,score:0,combo:0,bestCombo:0,multiplier:1,surge:0,distance:0,over:false}}
 function advance(state,{collect=false,hit=false,dt=0}){if(state.over)return state;const next={...state,distance:state.distance+dt};if(hit){if(next.surge>0){}else if(next.shields>0){next.shields-=1;next.combo=0}else{return{...next,over:true}}}if(collect){next.combo+=1;next.bestCombo=Math.max(next.bestCombo,next.combo);if(next.combo%3===0&&next.surge<=0){next.surge=5;next.multiplier=2}next.score+=10*next.multiplier}if(next.surge>0){next.surge=Math.max(0,next.surge-dt);if(next.surge===0){next.multiplier=1;next.combo=0}}next.score+=Math.round(2*dt);return next}
 const C=document.querySelector('#game'),ctx=C.getContext('2d'),W=C.width,H=C.height;
-const el=id=>document.querySelector(id), scoreEl=el('score'),bestEl=el('best'),bestPanel=el('bestPanel'),surgeEl=el('surge'),overlay=el('overlay'),play=el('play');
+const el=id=>document.querySelector('#'+id), scoreEl=el('score'),bestEl=el('best'),bestPanel=el('bestPanel'),surgeEl=el('surge'),overlay=el('overlay'),play=el('play');
 let game, player, objects, running=false,last=0, held=0, high=Number(localStorage.dlicomDropHigh||0);
 const params=new URLSearchParams(location.search), ref=params.get('ref'), referred=Boolean(ref&&ref!==localStorage.dlicomDropRef);
 if(referred){localStorage.dlicomDropRef=ref;localStorage.dlicomDropShield=Math.min(3,Number(localStorage.dlicomDropShield||0)+1)}
