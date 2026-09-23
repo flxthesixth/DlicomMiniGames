@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { advance, newGame } from '../public/game-core.js';
+import { advance, difficultyLevel, newGame } from '../public/game-core.js';
 
 test('lane input stays inside three runner lanes', () => {
   let state = newGame(7);
@@ -47,4 +47,12 @@ test('jump starts once and expires after its short duration', () => {
   assert.ok(state.jump < .7);
   state = advance(state, { dt: 1 });
   assert.equal(state.jump, 0);
+});
+
+test('difficulty level rises at score milestones', () => {
+  assert.equal(difficultyLevel(0), 1);
+  assert.equal(difficultyLevel(499), 1);
+  assert.equal(difficultyLevel(500), 2);
+  assert.equal(difficultyLevel(1500), 4);
+  assert.equal(difficultyLevel(99999), 6);
 });

@@ -13,6 +13,11 @@ export function newGame(seed = 1, shields = 0) {
   };
 }
 
+export function difficultyLevel(score) {
+  // Level 1..6: rises every 500 score. Drives spawn mix and speed pacing.
+  return Math.min(6, 1 + Math.floor(Math.max(0, score) / 500));
+}
+
 export function advance(state, { lane = 0, collect = false, hit = false, jump = false, dt = 0 } = {}) {
   if (state.over) return state;
   const next = { ...state, score: state.score, surge: state.surge, combo: state.combo };
