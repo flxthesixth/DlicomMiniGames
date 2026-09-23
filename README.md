@@ -4,7 +4,7 @@ Endless signal survival minigame for Dlicom. No wallet, no payments — just pla
 
 ## Play
 
-Open `index.html` in a browser, or deploy the folder as a static site (Cloudflare Pages: framework preset None, build command empty, output directory `/`).
+Open `public/index.html` in a browser. Cloudflare Workers deploy uses `wrangler.jsonc` and uploads only `public/`, so build dependencies cannot become static assets.
 
 ## How it works
 

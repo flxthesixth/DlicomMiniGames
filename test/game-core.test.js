@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { advance, newGame } from '../game-core.js';
+import { advance, newGame } from '../public/game-core.js';
 
 test('collecting signal adds score and combo', () => {
   const state = newGame(7);
