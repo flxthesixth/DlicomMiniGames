@@ -11,6 +11,8 @@ export default {
     if (path === '/auth/x') return startAuth(env, url);
     if (path === '/auth/x/callback') return callback(env, request, url);
     if (path === '/api/me') return me(env, request);
+    if (path === '/api/scores' && request.method === 'GET') return topScores(env, url);
+    if (path === '/api/scores/submit' && request.method === 'POST') return submitScore(env, request);
     if (path === '/logout') return logout();
 
     return env.ASSETS.fetch(request);
@@ -129,6 +131,40 @@ function logout() {
   const resp = new Response(null, { status: 302, headers: { Location: '/' } });
   resp.headers.append('Set-Cookie', 'session=; HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age=0');
   return resp;
+}
+
+async function topScores(env, url) {
+  if (!env.DB) return json({ error: 'leaderboard_not_configured' }, 503);
+  const limit = Math.min(50, Math.max(1, Number(url.searchParams.get('limit') || 10)));
+  const { results } = await env.DB.prepare(
+    'SELECT username, name, score, combo FROM scores ORDER BY score DESC LIMIT ?1'
+  ).bind(limit).all();
+  return json({ scores: results });
+}
+
+async function submitScore(env, request) {
+  if (!env.DB) return json({ error: 'leaderboard_not_configured' }, 503);
+  const session = await verifySession(request.headers.get('Cookie') || '', env.SESSION_SECRET);
+  if (!session) return json({ error: 'login_required' }, 401);
+  let body;
+  try { body = await request.json(); } catch { return json({ error: 'bad_json' }, 400); }
+  const score = Math.floor(Number(body.score));
+  const combo = Math.floor(Number(body.combo || 0));
+  if (!Number.isFinite(score) || score < 0 || score > 10_000_000) return json({ error: 'bad_score' }, 400);
+  await env.DB.prepare(
+    `INSERT INTO scores (x_id, username, name, score, combo, updated_at)
+     VALUES (?1, ?2, ?3, ?4, ?5, ?6)
+     ON CONFLICT(x_id) DO UPDATE SET
+       score = MAX(score, excluded.score),
+       combo = MAX(combo, excluded.combo),
+       username = excluded.username,
+       name = excluded.name,
+       updated_at = excluded.updated_at`
+  ).bind(session.id, session.username, session.name || null, score, combo, Date.now()).run();
+  const rank = await env.DB.prepare(
+    'SELECT COUNT(*) + 1 AS rank FROM scores WHERE score > ?1'
+  ).bind(score).first();
+  return json({ ok: true, rank: rank.rank });
 }
 
 function json(obj, status = 200) {
