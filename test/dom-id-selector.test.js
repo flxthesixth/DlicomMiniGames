@@ -25,3 +25,16 @@ test('runner cycle runs at original 10fps pace', () => {
   const html = readFileSync(new URL('../public/index.html', import.meta.url), 'utf8');
   assert.match(html, /runnerTextures\[Math\.floor\(runClock\*10\)%8\]/);
 });
+
+test('dodge inputs protect the same frame they are pressed', () => {
+  const html = readFileSync(new URL('../public/index.html', import.meta.url), 'utf8');
+  assert.match(html, /game\.jump>0\|\|jumpRequested/);
+  assert.match(html, /game\.slide>0\|\|slideRequested/);
+});
+
+test('player collision window uses compact hitbox constants', () => {
+  const html = readFileSync(new URL('../public/index.html', import.meta.url), 'utf8');
+  assert.match(html, /PLAYER_LANE_HITBOX=\.48/);
+  assert.match(html, /PLAYER_DEPTH_MIN=\.9/);
+  assert.match(html, /PLAYER_DEPTH_MAX=1\.7/);
+});
