@@ -1,11 +1,14 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "dlicomgames",
+  "main": "worker/index.js",
   "compatibility_date": "2026-09-21",
   "observability": {
     "enabled": true
   },
   "assets": {
-    "directory": "public"
+    "directory": "public",
+    "binding": "ASSETS",
+    "not_found_handling": "single-page-application"
   }
 }
