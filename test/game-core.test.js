@@ -39,3 +39,12 @@ test('hit without shield ends run', () => {
   const next = advance(newGame(7), { hit: true, dt: 1 });
   assert.equal(next.over, true);
 });
+
+test('jump starts once and expires after its short duration', () => {
+  let state = advance(newGame(7), { jump: true, dt: 0 });
+  assert.ok(state.jump > 0);
+  state = advance(state, { jump: true, dt: .1 });
+  assert.ok(state.jump < .7);
+  state = advance(state, { dt: 1 });
+  assert.equal(state.jump, 0);
+});
