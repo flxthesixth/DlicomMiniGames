@@ -26,9 +26,14 @@ test('runner cycle runs at original 10fps pace', () => {
   assert.match(html, /runnerTextures\[Math\.floor\(runClock\*10\)%8\]/);
 });
 
-test('collision delegates dodge outcome to game core in the same frame', () => {
+test('slide control is swipe-only and gameplay box has fullscreen', () => {
   const html = readFileSync(new URL('../public/index.html', import.meta.url), 'utf8');
-  assert.match(html, /hitType:type,jump:jumpRequested,slide:slideRequested/);
+  assert.ok(!html.includes('slideBtn'), 'on-screen slide button must be gone');
+  assert.match(html, /id="fsBtn"/);
+  assert.match(html, /requestFullscreen/);
+  assert.match(html, /fullscreenchange/);
+  assert.match(html, /ArrowDown/);
+  assert.match(html, /SLIDE or down\/S/);
 });
 
 test('player collision window uses compact hitbox constants', () => {
