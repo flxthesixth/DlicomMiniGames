@@ -18,13 +18,18 @@ export function difficultyLevel(score) {
   return Math.min(6, 1 + Math.floor(Math.max(0, score) / 500));
 }
 
-export function advance(state, { lane = 0, collect = false, hit = false, jump = false, slide = false, dt = 0 } = {}) {
+export function advance(state, { lane = 0, collect = false, hit = false, hitType = null, jump = false, slide = false, dt = 0 } = {}) {
   if (state.over) return state;
   const next = { ...state, score: state.score, surge: state.surge, combo: state.combo };
   next.distance = state.distance + dt;
 
-  if (jump && next.jump <= 0 && next.slide <= 0) next.jump = .62; // JUMP: vaults ground hazards
-  if (slide && next.slide <= 0 && next.jump <= 0) next.slide = .48; // SLIDE: ducks flying hazards
+  // Input must take effect before collision in this same simulation step.
+  if (jump && next.jump <= 0 && next.slide <= 0) next.jump = .62;
+  if (slide && next.slide <= 0 && next.jump <= 0) next.slide = .48;
+  const airborne = next.jump > 0;
+  const sliding = next.slide > 0;
+  const dodged = hitType === 'ground' ? airborne : hitType === 'flying' ? sliding : false;
+  const effectiveHit = hit && !dodged;
   if (next.jump > 0) next.jump = Math.max(0, next.jump - dt);
   if (next.slide > 0) next.slide = Math.max(0, next.slide - dt);
 
@@ -32,7 +37,7 @@ export function advance(state, { lane = 0, collect = false, hit = false, jump = 
     next.lane = Math.max(0, Math.min(LANES - 1, state.lane + lane));
   }
 
-  if (hit) {
+  if (effectiveHit) {
     if (next.surge > 0) {
       // surge = invincible, obstacle passes through
     } else if (next.shields > 0) {

@@ -26,10 +26,9 @@ test('runner cycle runs at original 10fps pace', () => {
   assert.match(html, /runnerTextures\[Math\.floor\(runClock\*10\)%8\]/);
 });
 
-test('dodge inputs protect the same frame they are pressed', () => {
+test('collision delegates dodge outcome to game core in the same frame', () => {
   const html = readFileSync(new URL('../public/index.html', import.meta.url), 'utf8');
-  assert.match(html, /game\.jump>0\|\|jumpRequested/);
-  assert.match(html, /game\.slide>0\|\|slideRequested/);
+  assert.match(html, /hitType:type,jump:jumpRequested,slide:slideRequested/);
 });
 
 test('player collision window uses compact hitbox constants', () => {
@@ -39,9 +38,7 @@ test('player collision window uses compact hitbox constants', () => {
   assert.match(html, /PLAYER_DEPTH_MAX=1\.55/);
 });
 
-test('collision branch uses height-aware obstacle dodge rules', () => {
-  const html = readFileSync(new URL('../public/index.html', import.meta.url), 'utf8');
-  // Ground hazards clear during jump; flying drones require slide.
-  assert.match(html, /const flying=e\.userData\.type==='drone'/);
-  assert.match(html, /flying\?\(sliding&&!airborne\):\(airborne\|\|sliding\)/);
+test('game core owns height-aware dodge rules', () => {
+  const core = readFileSync(new URL('../public/game-core.js', import.meta.url), 'utf8');
+  assert.match(core, /hitType === 'ground' \? airborne : hitType === 'flying' \? sliding/);
 });
