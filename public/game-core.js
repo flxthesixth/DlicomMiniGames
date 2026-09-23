@@ -8,7 +8,7 @@ export function newGame(seed = 1, shields = 0) {
     seed, shields,
     lane: 1,
     score: 0, combo: 0, bestCombo: 0,
-    multiplier: 1, surge: 0, jump: 0,
+    multiplier: 1, surge: 0, jump: 0, slide: 0,
     distance: 0, over: false,
   };
 }
@@ -18,13 +18,15 @@ export function difficultyLevel(score) {
   return Math.min(6, 1 + Math.floor(Math.max(0, score) / 500));
 }
 
-export function advance(state, { lane = 0, collect = false, hit = false, jump = false, dt = 0 } = {}) {
+export function advance(state, { lane = 0, collect = false, hit = false, jump = false, slide = false, dt = 0 } = {}) {
   if (state.over) return state;
   const next = { ...state, score: state.score, surge: state.surge, combo: state.combo };
   next.distance = state.distance + dt;
 
-  if (jump && next.jump <= 0) next.jump = .62; // JUMP: vaults jumpable obstacles
+  if (jump && next.jump <= 0 && next.slide <= 0) next.jump = .62; // JUMP: vaults low barriers
+  if (slide && next.slide <= 0 && next.jump <= 0) next.slide = .48; // SLIDE: ducks floating hazards
   if (next.jump > 0) next.jump = Math.max(0, next.jump - dt);
+  if (next.slide > 0) next.slide = Math.max(0, next.slide - dt);
 
   if (lane) {
     next.lane = Math.max(0, Math.min(LANES - 1, state.lane + lane));

@@ -56,3 +56,18 @@ test('difficulty level rises at score milestones', () => {
   assert.equal(difficultyLevel(1500), 4);
   assert.equal(difficultyLevel(99999), 6);
 });
+
+test('slide starts once and expires, and cannot overlap jump', () => {
+  let state = advance(newGame(7), { slide: true, dt: 0 });
+  assert.ok(state.slide > 0);
+  state = advance(state, { slide: true, dt: .1 });
+  assert.ok(state.slide < .55);
+  state = advance(state, { dt: 1 });
+  assert.equal(state.slide, 0);
+  const midJump = advance(newGame(7), { jump: true, dt: .1 });
+  const blocked = advance(midJump, { slide: true, dt: 0 });
+  assert.equal(blocked.slide, 0);
+  const midSlide = advance(newGame(7), { slide: true, dt: .1 });
+  const noJump = advance(midSlide, { jump: true, dt: 0 });
+  assert.equal(noJump.jump, 0);
+});
