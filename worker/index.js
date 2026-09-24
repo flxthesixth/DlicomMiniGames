@@ -12,6 +12,8 @@ export default {
     if (path === '/auth/x/callback') return callback(env, request, url);
     if (path === '/auth/guest' && request.method === 'POST') return guest(env, request);
     if (path === '/api/me') return me(env, request);
+    if (path === '/api/referral' && request.method === 'GET') return referral(env, request);
+    if (path === '/api/referral/apply' && request.method === 'POST') return applyReferral(env, request);
     if (path === '/api/scores' && request.method === 'GET') return topScores(env, url);
     if (path === '/api/scores/submit' && request.method === 'POST') return submitScore(env, request);
     if (path === '/logout') return logout();
@@ -133,8 +135,12 @@ async function verifySession(cookie, secret) {
 async function me(env, request) {
   if (!env.SESSION_SECRET) return json({ error: 'oauth_not_configured' }, 503);
   const session = await verifySession(request.headers.get('Cookie') || '', env.SESSION_SECRET);
-  if (!session) return json({ user: null }, 200);
-  return json({ user: { id: session.id, username: session.username, name: session.name } });
+  if (!session) return json({ user: null, bestScore: 0 }, 200);
+  const row = env.DB ? await env.DB.prepare('SELECT score FROM scores WHERE x_id = ?1').bind(session.id).first() : null;
+  return json({
+    user: { id: session.id, username: session.username, name: session.name, guest: !!session.guest },
+    bestScore: row?.score || 0,
+  });
 }
 
 function logout() {
@@ -164,6 +170,28 @@ async function guest(env, request) {
   const resp = new Response(null, { status: 302, headers: { Location: '/game.html?login=1' } });
   resp.headers.append('Set-Cookie', `session=${b64url(new TextEncoder().encode(payload))}.${sig}; HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age=604800`);
   return resp;
+}
+
+async function referral(env, request) {
+  const session = await verifySession(request.headers.get('Cookie') || '', env.SESSION_SECRET);
+  if (!session || session.guest) return json({ error: 'referral_requires_x' }, 403);
+  return json({ code: b64url(new TextEncoder().encode(session.id)) });
+}
+
+async function applyReferral(env, request) {
+  const session = await verifySession(request.headers.get('Cookie') || '', env.SESSION_SECRET);
+  if (!session || session.guest) return json({ error: 'referral_requires_x' }, 403);
+  let data;
+  try { data = await request.json(); } catch { return json({ error: 'bad_json' }, 400); }
+  let inviter;
+  try {
+    inviter = new TextDecoder().decode(Uint8Array.from(atob(String(data.code || '').replace(/-/g, '+').replace(/_/g, '/')), c => c.charCodeAt(0)));
+  } catch { return json({ error: 'bad_referral' }, 400); }
+  if (!inviter || inviter === session.id) return json({ error: 'bad_referral' }, 400);
+  await env.DB.prepare(
+    'INSERT OR IGNORE INTO referrals (invitee_x_id, inviter_x_id, created_at) VALUES (?1, ?2, ?3)'
+  ).bind(session.id, inviter, Date.now()).run();
+  return json({ ok: true });
 }
 
 async function topScores(env, url) {
