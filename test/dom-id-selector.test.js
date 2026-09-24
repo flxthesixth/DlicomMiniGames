@@ -69,3 +69,18 @@ test('fullscreen control is anchored at the bottom right', () => {
   assert.match(html, /\.fsbtn\{[^}]*bottom:10px;right:10px/);
   assert.doesNotMatch(html, /\.fsbtn\{[^}]*top:10px/);
 });
+
+test('run-end overlay reveals post and save score actions below run again', () => {
+  const html = readFileSync(new URL('../public/game.html', import.meta.url), 'utf8');
+  assert.match(html, /id="play">START RUN<\/button><div class="endActions" id="endActions" hidden><button[^>]+id="share">POST SCORE<\/button><button[^>]+id="banner">SAVE SCORE<\/button>/);
+  assert.match(html, /endActions\.hidden=false/);
+  assert.match(html, /endActions\.hidden=true/);
+});
+
+test('surge collision bursts obstacle and surge mode intensifies arena visuals', () => {
+  const html = readFileSync(new URL('../public/game.html', import.meta.url), 'utf8');
+  assert.match(html, /if\(game\.destroyed\)\{burst\(e\.position,'surge'\)/);
+  assert.match(html, /arena\.classList\.toggle\('super',game\.surge>0\)/);
+  assert.match(html, /player\.userData\.sprite\.material\.color\.set\(game\.surge>0\?0x9fd0ff:0xffffff\)/);
+  assert.match(html, /\.arena\.super\{/);
+});

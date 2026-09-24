@@ -10,7 +10,7 @@ export function newGame(seed = 1, shields = 0) {
     score: 0, combo: 0, bestCombo: 0,
     multiplier: 1, surge: 0, jump: 0, slide: 0,
     lives: 3, invulnerable: 0,
-    distance: 0, over: false, dodged: false,
+    distance: 0, over: false, dodged: false, destroyed: false, damaged: false,
   };
 }
 
@@ -21,7 +21,7 @@ export function difficultyLevel(score) {
 
 export function advance(state, { lane = 0, collect = false, hit = false, hitType = null, jump = false, slide = false, dt = 0 } = {}) {
   if (state.over) return state;
-  const next = { ...state, score: state.score, surge: state.surge, combo: state.combo, dodged: false };
+  const next = { ...state, score: state.score, surge: state.surge, combo: state.combo, dodged: false, destroyed: false, damaged: false };
   next.distance = state.distance + dt;
 
   // Input must take effect before collision in this same simulation step.
@@ -43,11 +43,11 @@ export function advance(state, { lane = 0, collect = false, hit = false, hitType
 
   if (effectiveHit) {
     if (next.surge > 0) {
-      // surge = invincible, obstacle passes through
-      next.dodged = true;
+      next.destroyed = true;
     } else {
       next.lives -= 1;
       next.combo = 0;
+      next.damaged = true;
       if (next.lives <= 0) {
         next.over = true;
         return next;

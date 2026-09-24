@@ -112,3 +112,21 @@ test('wrong dodge consumes a life for each obstacle type', () => {
   assert.equal(advance(newGame(7), { slide: true, hit: true, hitType: 'ground', dt: 0 }).lives, 2);
   assert.equal(advance(newGame(7), { jump: true, hit: true, hitType: 'flying', dt: 0 }).lives, 2);
 });
+
+test('surge collision destroys obstacle without life loss or recovery blink', () => {
+  const state = { ...newGame(7), surge: 3, multiplier: 2 };
+  const next = advance(state, { hit: true, hitType: 'ground', dt: 0 });
+  assert.equal(next.lives, 3);
+  assert.equal(next.invulnerable, 0);
+  assert.equal(next.destroyed, true);
+  assert.equal(next.dodged, false);
+  assert.equal(next.over, false);
+});
+
+test('collision result flags reset outside their collision frame', () => {
+  const state = { ...newGame(7), surge: 3, multiplier: 2 };
+  const destroyed = advance(state, { hit: true, hitType: 'ground', dt: 0 });
+  const next = advance(destroyed, { dt: .1 });
+  assert.equal(next.destroyed, false);
+  assert.equal(next.damaged, false);
+});
