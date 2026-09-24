@@ -14,7 +14,9 @@ test('root is a login gate with X and named guest paths', () => {
   assert.ok(!login.includes('IDENTITY CHECK / 01'));
   assert.match(login, /background:rgba\(5,7,13,\.78\)/);
   assert.match(login, /\/auth\/guest/);
-  assert.match(login, /login-silhouette\.png/);
+  assert.match(login, /login-hero\.jpg/);
+  assert.doesNotMatch(login, /login-silhouette\.png/);
+  assert.doesNotMatch(login, /filter:brightness\(0\)/);
   assert.ok(existsSync(new URL('../public/game.html', import.meta.url)));
 });
 
