@@ -29,8 +29,18 @@ test('best run comes from current account and referrals require X login', () => 
   assert.match(worker, /path === '\/api\/referral'/);
   assert.match(worker, /referral_requires_x/);
   assert.match(worker, /INSERT OR IGNORE INTO referrals/);
+  assert.match(worker, /code: `@\$\{session\.username\}`/);
+  assert.match(worker, /SELECT x_id FROM x_users WHERE username = \?1/);
   assert.match(html, /fetch\('\/api\/referral'/);
   assert.match(html, /fetch\('\/api\/referral\/apply'/);
+  assert.match(html, /\/game\?ref=\$\{x\.code\}/);
+});
+
+test('score banner uses supplied image template and draws account best score', () => {
+  const html = readFileSync(new URL('../public/game.html', import.meta.url), 'utf8');
+  assert.match(html, /score-banner-template\.jpg/);
+  assert.match(html, /x\.drawImage\(img,0,0,b\.width,b\.height\)/);
+  assert.match(html, /x\.fillText\(String\(high\)\.padStart\(5,'0'\)/);
 });
 
 test('d1 schema has unique x_id and descending score index', () => {

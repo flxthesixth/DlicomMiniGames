@@ -17,3 +17,9 @@ CREATE TABLE IF NOT EXISTS referrals (
   CHECK (invitee_x_id <> inviter_x_id)
 );
 CREATE INDEX IF NOT EXISTS idx_referrals_inviter ON referrals(inviter_x_id);
+
+CREATE TABLE IF NOT EXISTS x_users (
+  x_id TEXT PRIMARY KEY,
+  username TEXT NOT NULL COLLATE NOCASE UNIQUE,
+  updated_at INTEGER NOT NULL
+);

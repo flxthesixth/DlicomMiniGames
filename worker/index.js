@@ -107,6 +107,12 @@ async function callback(env, request, url) {
   });
   if (!meResp.ok) return json({ error: 'profile_failed' }, 502);
   const profile = await meResp.json();
+  if (env.DB) {
+    await env.DB.prepare(
+      `INSERT INTO x_users (x_id, username, updated_at) VALUES (?1, ?2, ?3)
+       ON CONFLICT(x_id) DO UPDATE SET username = excluded.username, updated_at = excluded.updated_at`
+    ).bind(profile.data.id, profile.data.username, Date.now()).run();
+  }
 
   const payload = JSON.stringify({
     id: profile.data.id,
@@ -175,7 +181,7 @@ async function guest(env, request) {
 async function referral(env, request) {
   const session = await verifySession(request.headers.get('Cookie') || '', env.SESSION_SECRET);
   if (!session || session.guest) return json({ error: 'referral_requires_x' }, 403);
-  return json({ code: b64url(new TextEncoder().encode(session.id)) });
+  return json({ code: `@${session.username}` });
 }
 
 async function applyReferral(env, request) {
@@ -183,14 +189,13 @@ async function applyReferral(env, request) {
   if (!session || session.guest) return json({ error: 'referral_requires_x' }, 403);
   let data;
   try { data = await request.json(); } catch { return json({ error: 'bad_json' }, 400); }
-  let inviter;
-  try {
-    inviter = new TextDecoder().decode(Uint8Array.from(atob(String(data.code || '').replace(/-/g, '+').replace(/_/g, '/')), c => c.charCodeAt(0)));
-  } catch { return json({ error: 'bad_referral' }, 400); }
-  if (!inviter || inviter === session.id) return json({ error: 'bad_referral' }, 400);
+  const username = String(data.code || '').trim().replace(/^@/, '');
+  if (!/^[A-Za-z0-9_]{1,15}$/.test(username)) return json({ error: 'bad_referral' }, 400);
+  const inviter = await env.DB.prepare('SELECT x_id FROM x_users WHERE username = ?1 COLLATE NOCASE').bind(username).first();
+  if (!inviter || inviter.x_id === session.id) return json({ error: 'bad_referral' }, 400);
   await env.DB.prepare(
     'INSERT OR IGNORE INTO referrals (invitee_x_id, inviter_x_id, created_at) VALUES (?1, ?2, ?3)'
-  ).bind(session.id, inviter, Date.now()).run();
+  ).bind(session.id, inviter.x_id, Date.now()).run();
   return json({ ok: true });
 }
 
