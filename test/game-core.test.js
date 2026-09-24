@@ -12,20 +12,29 @@ test('lane input stays inside three runner lanes', () => {
   assert.equal(state.lane, 1);
 });
 
-test('collecting signal adds score and combo', () => {
+test('collecting crystal adds points without charging super mode', () => {
   const state = newGame(7);
   const next = advance(state, { collect: true, dt: 1 });
-  assert.equal(next.combo, 1);
+  assert.equal(next.puzzlePieces, 0);
+  assert.equal(next.surge, 0);
   assert.ok(next.score > state.score);
 });
 
-test('three signals activate surge and double multiplier', () => {
+test('three puzzle pieces activate surge and reset puzzle charge', () => {
   let state = newGame(7);
-  state = advance(state, { collect: true, dt: 1 });
-  state = advance(state, { collect: true, dt: 1 });
-  state = advance(state, { collect: true, dt: 1 });
+  state = advance(state, { puzzle: true, dt: 0 });
+  assert.equal(state.puzzlePieces, 1);
+  state = advance(state, { puzzle: true, dt: 0 });
+  assert.equal(state.puzzlePieces, 2);
+  state = advance(state, { puzzle: true, dt: 0 });
   assert.ok(state.surge > 0);
   assert.equal(state.multiplier, 2);
+  assert.equal(state.puzzlePieces, 0);
+});
+
+test('correct quiz gate awards bonus points', () => {
+  const next = advance(newGame(7), { quizCorrect: true, dt: 0 });
+  assert.equal(next.score, 25);
 });
 
 test('each run starts with three lives', () => {

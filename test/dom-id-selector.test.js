@@ -84,3 +84,20 @@ test('surge collision bursts obstacle and surge mode intensifies arena visuals',
   assert.match(html, /player\.userData\.sprite\.material\.color\.set\(game\.surge>0\?0x9fd0ff:0xffffff\)/);
   assert.match(html, /\.arena\.super\{/);
 });
+
+test('puzzle timer and quiz gate timer are independent', () => {
+  const html = readFileSync(new URL('../public/game.html', import.meta.url), 'utf8');
+  assert.match(html, /lastPuzzle>=3\.5/);
+  assert.match(html, /lastQuiz>=10/);
+  assert.match(html, /spawnPuzzle\(\)/);
+  assert.match(html, /spawnQuizGate\(\)/);
+  assert.match(html, /dlicom-puzzle-%d\.png/);
+  assert.match(html, /id="puzzleCount">0 \/ 3/);
+});
+
+test('quiz gate presents three lanes and a math prompt', () => {
+  const html = readFileSync(new URL('../public/game.html', import.meta.url), 'utf8');
+  assert.match(html, /id="quizPrompt"/);
+  assert.match(html, /g\.userData\.type='quiz'/);
+  assert.match(html, /g\.userData\.correct=/);
+});
