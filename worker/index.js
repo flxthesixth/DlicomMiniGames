@@ -138,11 +138,11 @@ function logout() {
 }
 
 async function guest(env, request) {
-  if (!env.SESSION_SECRET) return Response.redirect(`${new URL(request.url).origin}/?error=login`, 302);
+  if (!env.SESSION_SECRET) return new Response(null, { status: 302, headers: { Location: `/?error=login` } });
   const form = await request.formData();
   const name = String(form.get('name') || '').trim().replace(/\s+/g, ' ');
   if (!/^[A-Za-z0-9_ .-]{2,24}$/.test(name)) {
-    return Response.redirect(`${new URL(request.url).origin}/?error=name`, 302);
+    return new Response(null, { status: 302, headers: { Location: '/?error=name' } });
   }
   const payload = JSON.stringify({
     id: `guest_${b64url(new TextEncoder().encode(name))}`,
@@ -152,7 +152,7 @@ async function guest(env, request) {
     exp: Date.now() + 1000 * 60 * 60 * 24 * 7,
   });
   const sig = await sign(payload, env.SESSION_SECRET);
-  const resp = Response.redirect(`${new URL(request.url).origin}/game.html?login=1`, 302);
+  const resp = new Response(null, { status: 302, headers: { Location: '/game.html?login=1' } });
   resp.headers.append('Set-Cookie', `session=${b64url(new TextEncoder().encode(payload))}.${sig}; HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age=604800`);
   return resp;
 }

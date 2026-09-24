@@ -17,6 +17,6 @@ test('root is a login gate with X and named guest paths', () => {
 test('worker creates a signed guest session and routes OAuth back to game', () => {
   assert.match(worker, /path === '\/auth\/guest' && request\.method === 'POST'/);
   assert.match(worker, /async function guest/);
-  assert.match(worker, /Location: '\/game\.html\?login=1'/);
+  assert.match(worker, /new Response\(null, \{ status: 302, headers: \{ Location: '\/game\.html\?login=1' \} \}\)/);
   assert.match(worker, /guest_/);
 });
