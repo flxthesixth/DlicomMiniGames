@@ -43,6 +43,19 @@ test('score banner uses supplied image template and draws account best score', (
   assert.match(html, /x\.fillText\(String\(high\)\.padStart\(5,'0'\)/);
 });
 
+test('referral panel posts a Super Dili invitation instead of showing a raw link', () => {
+  const html = readFileSync(new URL('../public/game.html', import.meta.url), 'utf8');
+  assert.match(html, /id="refPost"[^>]*>POST ON X<\/button>/);
+  assert.doesNotMatch(html, /INVITE LINK:/);
+  assert.match(html, /My best score as Super Dili: \$\{high\}\. Let's run faster with me and save the Dili World!/);
+});
+
+test('post score uses current score and the account referral URL', () => {
+  const html = readFileSync(new URL('../public/game.html', import.meta.url), 'utf8');
+  assert.match(html, /I scored \$\{game\.score\} in \. Keep the signal alive\./);
+  assert.match(html, /referralUrl/);
+});
+
 test('d1 schema has unique x_id and descending score index', () => {
   const schema = readFileSync(new URL('../schema.sql', import.meta.url), 'utf8');
   assert.match(schema, /x_id TEXT NOT NULL UNIQUE/);
