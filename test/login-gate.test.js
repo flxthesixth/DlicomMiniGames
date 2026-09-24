@@ -26,3 +26,8 @@ test('worker creates a signed guest session and routes OAuth back to game', () =
   assert.match(worker, /try \{ form = await request\.formData\(\); \} catch/);
   assert.match(worker, /Cache-Control', 'no-store'/);
 });
+
+test('Cloudflare routes auth and API requests through the Worker first', () => {
+  const config = readFileSync(new URL('../wrangler.jsonc', import.meta.url), 'utf8');
+  assert.match(config, /"run_worker_first":\s*\[\s*"\/auth\/\*",\s*"\/api\/\*",\s*"\/logout"\s*\]/);
+});
