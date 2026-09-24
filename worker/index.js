@@ -19,7 +19,13 @@ export default {
       return Response.redirect(`${url.origin}/`, 302);
     }
 
-    return env.ASSETS.fetch(request);
+    const asset = await env.ASSETS.fetch(request);
+    if (path === '/' || path === '/index.html' || path === '/game.html') {
+      const headers = new Headers(asset.headers);
+      headers.set('Cache-Control', 'no-store');
+      return new Response(asset.body, { status: asset.status, statusText: asset.statusText, headers });
+    }
+    return asset;
   },
 };
 
@@ -138,8 +144,11 @@ function logout() {
 }
 
 async function guest(env, request) {
-  if (!env.SESSION_SECRET) return new Response(null, { status: 302, headers: { Location: `/?error=login` } });
-  const form = await request.formData();
+  if (!env.SESSION_SECRET) return new Response(null, { status: 302, headers: { Location: '/?error=login' } });
+  let form;
+  try { form = await request.formData(); } catch {
+    return new Response(null, { status: 302, headers: { Location: '/?error=name' } });
+  }
   const name = String(form.get('name') || '').trim().replace(/\s+/g, ' ');
   if (!/^[A-Za-z0-9_ .-]{2,24}$/.test(name)) {
     return new Response(null, { status: 302, headers: { Location: '/?error=name' } });

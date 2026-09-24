@@ -19,4 +19,6 @@ test('worker creates a signed guest session and routes OAuth back to game', () =
   assert.match(worker, /async function guest/);
   assert.match(worker, /new Response\(null, \{ status: 302, headers: \{ Location: '\/game\.html\?login=1' \} \}\)/);
   assert.match(worker, /guest_/);
+  assert.match(worker, /try \{ form = await request\.formData\(\); \} catch/);
+  assert.match(worker, /Cache-Control', 'no-store'/);
 });
