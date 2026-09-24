@@ -9,7 +9,7 @@ test('DOM helper selects element IDs with a # prefix', () => {
 
 test('footer uses centered FLX play-post tagline', () => {
   const html = readFileSync(new URL('../public/game.html', import.meta.url), 'utf8');
-  assert.match(html, /<footer class="foot">DLICOM RUNNER BY FLX · PLAY FIRST, POST THEN\.<\/footer>/);
+  assert.match(html, /<footer class="foot">DILI RUN BY FLX · PLAY FIRST, POST THEN\.<\/footer>/);
   assert.match(html, /\.foot\{[^}]*text-align:center/);
 });
 
@@ -92,7 +92,7 @@ test('puzzle timer and quiz gate timer are independent', () => {
   assert.match(html, /spawnPuzzle\(\)/);
   assert.match(html, /spawnQuizGate\(\)/);
   assert.match(html, /dlicom-puzzle-%d\.png/);
-  assert.match(html, /id="puzzleCount">0 \/ 3/);
+  assert.match(html, /id="puzzleCount">0\/3/);
 });
 
 test('quiz gate presents three lanes and a math prompt', () => {
@@ -123,4 +123,22 @@ test('run-end title taunts and space starts the next run', () => {
   const html = readFileSync(new URL('../public/game.html', import.meta.url), 'utf8');
   assert.match(html, /'YOU NOOB!':'SKILL ISSUE!'/);
   assert.match(html, /play\.textContent==='RUN AGAIN'\)reset\(\)/);
+});
+
+test('branding is DILI RUN and puzzle count is compact', () => {
+  const html = readFileSync(new URL('../public/game.html', import.meta.url), 'utf8');
+  assert.doesNotMatch(html, /DLICOM RUNNER/);
+  assert.match(html, /DILI<i>◆<\/i>RUN/);
+  assert.match(html, /id="puzzleCount">0\/3/);
+  assert.match(html, /`\$\{game\.puzzlePieces\}\/3`/);
+});
+
+test('Retree spawns every fifteen seconds and switches at most three lanes', () => {
+  const html = readFileSync(new URL('../public/game.html', import.meta.url), 'utf8');
+  assert.match(html, /lastRetree>=15/);
+  assert.match(html, /spawnRetree\(\)/);
+  assert.match(html, /dili-retree-%d\.png/);
+  assert.match(html, /type:'retree'/);
+  assert.match(html, /laneMoves:0/);
+  assert.match(html, /laneMoves<3/);
 });

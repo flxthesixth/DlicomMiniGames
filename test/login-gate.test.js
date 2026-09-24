@@ -11,6 +11,8 @@ test('root is a login gate with X and named guest paths', () => {
   assert.match(login, /id="guestName"/);
   assert.match(login, /placeholder="retree the pro"/);
   assert.match(login, /RUN<br>WITH <span>DILI\.<\/span>/);
+  assert.match(login, /DILI<i>◆<\/i>RUN/);
+  assert.doesNotMatch(login, /DLICOM RUNNER/);
   assert.ok(!login.includes('IDENTITY CHECK / 01'));
   assert.match(login, /background:rgba\(5,7,13,\.78\)/);
   assert.match(login, /\/auth\/guest/);

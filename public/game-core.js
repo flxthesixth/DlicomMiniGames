@@ -1,4 +1,4 @@
-// DLICOM RUNNER — pure game state. No DOM, no three.js. Deterministic given seed + inputs.
+// DILI RUN — pure game state. No DOM, no three.js. Deterministic given seed + inputs.
 // Three lanes: index 0 (left), 1 (center), 2 (right).
 
 export const LANES = 3;

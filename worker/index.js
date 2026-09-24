@@ -1,4 +1,4 @@
-// DLICOM RUNNER Worker: X OAuth login + static assets.
+// DILI RUN Worker: X OAuth login + static assets.
 // Routes: /auth/x (start), /auth/x/callback (token exchange), /api/me, /logout
 // Secrets (set via `npx wrangler secret put`): X_CLIENT_ID, X_CLIENT_SECRET, SESSION_SECRET, X_REDIRECT_URI
 // Credentials never touch the repo or the client; sessions are signed HMAC cookies.

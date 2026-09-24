@@ -1,6 +1,6 @@
-# DLICOM DROP
+# DILI RUN
 
-Endless signal survival minigame for Dlicom. No wallet, no payments — just play.
+Three-lane endless runner. No wallet, no payments — just play.
 
 ## Play
 
