@@ -13,11 +13,18 @@ test('worker exposes X OAuth routes and never leaks client secret to client', ()
   assert.ok(!/zyARsy/.test(worker)); // real secret must never be in source
 });
 
-test('login UI present and driven by /api/me', () => {
+test('login gate offers the X OAuth entry', () => {
   const html = readFileSync(new URL('../public/index.html', import.meta.url), 'utf8');
-  assert.match(html, /id="xLogin"/);
   assert.match(html, /href="\/auth\/x"/);
-  assert.match(html, /fetch\('\/api\/me'\)/);
+  assert.match(html, /LOG IN WITH X/);
+  assert.match(html, /CONTINUE AS GUEST/);
+});
+
+test('game page keeps OAuth header link and posts to leaderboard', () => {
+  const html = readFileSync(new URL('../public/game.html', import.meta.url), 'utf8');
+  assert.match(html, /id="xLogin"/);
+  assert.match(html, /\/logout/);
+  assert.match(html, /api\/scores\/submit/);
 });
 
 test('wrangler config serves worker with assets binding', () => {

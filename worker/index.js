@@ -10,10 +10,14 @@ export default {
 
     if (path === '/auth/x') return startAuth(env, url);
     if (path === '/auth/x/callback') return callback(env, request, url);
+    if (path === '/auth/guest' && request.method === 'POST') return guest(env, request);
     if (path === '/api/me') return me(env, request);
     if (path === '/api/scores' && request.method === 'GET') return topScores(env, url);
     if (path === '/api/scores/submit' && request.method === 'POST') return submitScore(env, request);
     if (path === '/logout') return logout();
+    if (path === '/game.html' && !(await verifySession(request.headers.get('Cookie') || '', env.SESSION_SECRET))) {
+      return Response.redirect(`${url.origin}/`, 302);
+    }
 
     return env.ASSETS.fetch(request);
   },
@@ -103,7 +107,7 @@ async function callback(env, request, url) {
     exp: Date.now() + 1000 * 60 * 60 * 24 * 7,
   });
   const sig = await sign(payload, env.SESSION_SECRET);
-  const resp = new Response(null, { status: 302, headers: { Location: '/?login=1' } });
+  const resp = new Response(null, { status: 302, headers: { Location: '/game.html?login=1' } });
   resp.headers.append('Set-Cookie', `session=${b64url(new TextEncoder().encode(payload))}.${sig}; HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age=604800`);
   resp.headers.append('Set-Cookie', `x_oauth_${state}=; HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age=0`);
   return resp;
@@ -130,6 +134,26 @@ async function me(env, request) {
 function logout() {
   const resp = new Response(null, { status: 302, headers: { Location: '/' } });
   resp.headers.append('Set-Cookie', 'session=; HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age=0');
+  return resp;
+}
+
+async function guest(env, request) {
+  if (!env.SESSION_SECRET) return Response.redirect(`${new URL(request.url).origin}/?error=login`, 302);
+  const form = await request.formData();
+  const name = String(form.get('name') || '').trim().replace(/\s+/g, ' ');
+  if (!/^[A-Za-z0-9_ .-]{2,24}$/.test(name)) {
+    return Response.redirect(`${new URL(request.url).origin}/?error=name`, 302);
+  }
+  const payload = JSON.stringify({
+    id: `guest_${b64url(new TextEncoder().encode(name))}`,
+    username: name,
+    name,
+    guest: true,
+    exp: Date.now() + 1000 * 60 * 60 * 24 * 7,
+  });
+  const sig = await sign(payload, env.SESSION_SECRET);
+  const resp = Response.redirect(`${new URL(request.url).origin}/game.html?login=1`, 302);
+  resp.headers.append('Set-Cookie', `session=${b64url(new TextEncoder().encode(payload))}.${sig}; HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age=604800`);
   return resp;
 }
 

@@ -11,7 +11,7 @@ test('leaderboard endpoints exist and require login to submit', () => {
 });
 
 test('game page shows leaderboard and posts score after run', () => {
-  const html = readFileSync(new URL('../public/index.html', import.meta.url), 'utf8');
+  const html = readFileSync(new URL('../public/game.html', import.meta.url), 'utf8');
   assert.match(html, /GLOBAL LEADERBOARD/);
   assert.match(html, /refreshBoard/);
   assert.match(html, /\/api\/scores\/submit/);
