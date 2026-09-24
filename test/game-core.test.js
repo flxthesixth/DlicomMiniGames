@@ -28,16 +28,33 @@ test('three signals activate surge and double multiplier', () => {
   assert.equal(state.multiplier, 2);
 });
 
-test('hit consumes shield before ending run', () => {
-  const state = { ...newGame(7), shields: 1 };
-  const next = advance(state, { hit: true, dt: 1 });
-  assert.equal(next.shields, 0);
+test('each run starts with three lives', () => {
+  assert.equal(newGame(7).lives, 3);
+});
+
+test('hit consumes one life and grants two seconds of invulnerability', () => {
+  const next = advance(newGame(7), { hit: true, dt: 0 });
+  assert.equal(next.lives, 2);
+  assert.equal(next.invulnerable, 2);
   assert.equal(next.over, false);
 });
 
-test('hit without shield ends run', () => {
-  const next = advance(newGame(7), { hit: true, dt: 1 });
-  assert.equal(next.over, true);
+test('hits during recovery do not consume another life', () => {
+  const hit = advance(newGame(7), { hit: true, dt: 0 });
+  const protectedState = advance(hit, { hit: true, dt: 1 });
+  assert.equal(protectedState.lives, 2);
+  assert.equal(protectedState.over, false);
+  assert.equal(protectedState.dodged, true);
+});
+
+test('third unprotected hit ends the run', () => {
+  let state = advance(newGame(7), { hit: true, dt: 0 });
+  state = advance(state, { dt: 2 });
+  state = advance(state, { hit: true, dt: 0 });
+  state = advance(state, { dt: 2 });
+  state = advance(state, { hit: true, dt: 0 });
+  assert.equal(state.lives, 0);
+  assert.equal(state.over, true);
 });
 
 test('jump starts once and expires after its short duration', () => {
@@ -91,7 +108,7 @@ test('collision result resets outside the collision frame', () => {
   assert.equal(advance(dodged, { dt: .1 }).dodged, false);
 });
 
-test('wrong dodge never clears obstacle type', () => {
-  assert.equal(advance(newGame(7), { slide: true, hit: true, hitType: 'ground', dt: 0 }).over, true);
-  assert.equal(advance(newGame(7), { jump: true, hit: true, hitType: 'flying', dt: 0 }).over, true);
+test('wrong dodge consumes a life for each obstacle type', () => {
+  assert.equal(advance(newGame(7), { slide: true, hit: true, hitType: 'ground', dt: 0 }).lives, 2);
+  assert.equal(advance(newGame(7), { jump: true, hit: true, hitType: 'flying', dt: 0 }).lives, 2);
 });

@@ -9,6 +9,7 @@ export function newGame(seed = 1, shields = 0) {
     lane: 1,
     score: 0, combo: 0, bestCombo: 0,
     multiplier: 1, surge: 0, jump: 0, slide: 0,
+    lives: 3, invulnerable: 0,
     distance: 0, over: false, dodged: false,
   };
 }
@@ -28,11 +29,13 @@ export function advance(state, { lane = 0, collect = false, hit = false, hitType
   if (slide && next.slide <= 0 && next.jump <= 0) next.slide = .48;
   const airborne = next.jump > 0;
   const sliding = next.slide > 0;
-  const dodged = hit && (hitType === 'ground' ? airborne : hitType === 'flying' ? sliding : false);
-  next.dodged = dodged;
-  const effectiveHit = hit && !dodged;
+  const actionDodge = hit && (hitType === 'ground' ? airborne : hitType === 'flying' ? sliding : false);
+  const protectedHit = hit && next.invulnerable > 0;
+  next.dodged = actionDodge || protectedHit;
+  const effectiveHit = hit && !next.dodged;
   if (next.jump > 0) next.jump = Math.max(0, next.jump - dt);
   if (next.slide > 0) next.slide = Math.max(0, next.slide - dt);
+  if (next.invulnerable > 0) next.invulnerable = Math.max(0, next.invulnerable - dt);
 
   if (lane) {
     next.lane = Math.max(0, Math.min(LANES - 1, state.lane + lane));
@@ -41,12 +44,15 @@ export function advance(state, { lane = 0, collect = false, hit = false, hitType
   if (effectiveHit) {
     if (next.surge > 0) {
       // surge = invincible, obstacle passes through
-    } else if (next.shields > 0) {
-      next.shields -= 1;
-      next.combo = 0;
+      next.dodged = true;
     } else {
-      next.over = true;
-      return next;
+      next.lives -= 1;
+      next.combo = 0;
+      if (next.lives <= 0) {
+        next.over = true;
+        return next;
+      }
+      next.invulnerable = 2;
     }
   }
 
