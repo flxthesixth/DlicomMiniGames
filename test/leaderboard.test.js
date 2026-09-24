@@ -38,9 +38,9 @@ test('best run comes from current account and referrals require X login', () => 
 
 test('score banner uses supplied image template and draws account best score', () => {
   const html = readFileSync(new URL('../public/game.html', import.meta.url), 'utf8');
-  assert.match(html, /score-banner-template\.jpg/);
+  assert.match(html, /score-banner-template\.png/);
   assert.match(html, /x\.drawImage\(img,0,0,b\.width,b\.height\)/);
-  assert.match(html, /x\.fillText\(String\(high\)\.padStart\(5,'0'\)/);
+  assert.match(html, /x\.fillText\(String\(high\),1175,1168\)/);
 });
 
 test('referral panel posts a Super Dili invitation instead of showing a raw link', () => {
@@ -52,7 +52,7 @@ test('referral panel posts a Super Dili invitation instead of showing a raw link
 
 test('post score uses current score and the account referral URL', () => {
   const html = readFileSync(new URL('../public/game.html', import.meta.url), 'utf8');
-  assert.match(html, /I scored \$\{game\.score\} in \. Keep the signal alive\./);
+  assert.match(html, /I scored \$\{game\.score\} in DILI-RUN\. Be faster and catch me if you can!/);
   assert.match(html, /referralUrl/);
 });
 

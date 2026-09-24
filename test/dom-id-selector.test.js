@@ -101,3 +101,26 @@ test('quiz gate presents three lanes and a math prompt', () => {
   assert.match(html, /g\.userData\.type='quiz'/);
   assert.match(html, /g\.userData\.correct=/);
 });
+
+test('HUD separates left scores, centered super status, and right resources', () => {
+  const html = readFileSync(new URL('../public/game.html', import.meta.url), 'utf8');
+  assert.match(html, /class="scorebox"><div>BEST<b id="best"[^<]*<\/b><\/div><div>SCORE<b id="score"/);
+  assert.match(html, /class="statusbox"><div>LIVES<b id="lives"[^<]*<\/b><\/div><div>PUZZLE<b id="puzzleCount"/);
+  assert.match(html, /\.surge\{[^}]*position:absolute;top:58px;left:50%/);
+  assert.match(html, /\.quizPrompt\{[^}]*top:100px/);
+});
+
+test('impact, wrong-gate, and run-end sounds are distinct', () => {
+  const html = readFileSync(new URL('../public/game.html', import.meta.url), 'utf8');
+  assert.match(html, /kind==='hit'/);
+  assert.match(html, /kind==='wrong'/);
+  assert.match(html, /kind==='dead'/);
+  assert.match(html, /sfx\('wrong'\)/);
+  assert.match(html, /sfx\('dead'\)/);
+});
+
+test('run-end title taunts and space starts the next run', () => {
+  const html = readFileSync(new URL('../public/game.html', import.meta.url), 'utf8');
+  assert.match(html, /'YOU NOOB!':'SKILL ISSUE!'/);
+  assert.match(html, /play\.textContent==='RUN AGAIN'\)reset\(\)/);
+});
