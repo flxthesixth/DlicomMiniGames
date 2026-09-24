@@ -34,6 +34,9 @@ test('slide control is swipe-only and gameplay box has fullscreen', () => {
   assert.match(html, /fullscreenchange/);
   assert.match(html, /ArrowDown/);
   assert.match(html, /SLIDE or down\/S/);
+  assert.match(html, /pointerY=e\.clientY/);
+  assert.match(html, /Math\.abs\(dy\)>Math\.abs\(dx\)/);
+  assert.match(html, /dy<0\?jumpRequested=true:slideRequested=true/);
 });
 
 test('player collision window uses compact hitbox constants', () => {
