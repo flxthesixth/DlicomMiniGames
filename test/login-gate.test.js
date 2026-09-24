@@ -20,6 +20,17 @@ test('root is a login gate with X and named guest paths', () => {
   assert.ok(existsSync(new URL('../public/game.html', import.meta.url)));
 });
 
+test('login gate supports desktop, mobile, short screens, and iOS safe areas', () => {
+  assert.match(login, /overflow-x:hidden;overflow-y:auto/);
+  assert.match(login, /min-height:100svh/);
+  assert.match(login, /env\(safe-area-inset-top\)/);
+  assert.match(login, /env\(safe-area-inset-bottom\)/);
+  assert.match(login, /\.foot\{position:static/);
+  assert.match(login, /\.foot\{[^}]*font:900 12px monospace/);
+  assert.match(login, /background:rgba\(5,7,13,\.72\)/);
+  assert.match(login, /font:700 16px Arial/);
+});
+
 test('worker creates a signed guest session and routes OAuth back to game', () => {
   assert.match(worker, /path === '\/auth\/guest' && request\.method === 'POST'/);
   assert.match(worker, /async function guest/);
