@@ -75,13 +75,20 @@ test('slide starts once and expires, and cannot overlap jump', () => {
 test('jump clears a ground obstacle on the same collision frame', () => {
   const next = advance(newGame(7), { jump: true, hit: true, hitType: 'ground', dt: 0 });
   assert.equal(next.over, false);
+  assert.equal(next.dodged, true);
   assert.ok(next.jump > 0);
 });
 
 test('slide clears a flying obstacle on the same collision frame', () => {
   const next = advance(newGame(7), { slide: true, hit: true, hitType: 'flying', dt: 0 });
   assert.equal(next.over, false);
+  assert.equal(next.dodged, true);
   assert.ok(next.slide > 0);
+});
+
+test('collision result resets outside the collision frame', () => {
+  const dodged = advance(newGame(7), { jump: true, hit: true, hitType: 'ground', dt: 0 });
+  assert.equal(advance(dodged, { dt: .1 }).dodged, false);
 });
 
 test('wrong dodge never clears obstacle type', () => {

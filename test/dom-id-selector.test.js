@@ -50,3 +50,9 @@ test('game core owns height-aware dodge rules', () => {
   const core = readFileSync(new URL('../public/game-core.js', import.meta.url), 'utf8');
   assert.match(core, /hitType === 'ground' \? airborne : hitType === 'flying' \? sliding/);
 });
+
+test('successful dodge keeps obstacle moving without burst or removal', () => {
+  const html = readFileSync(new URL('../public/game.html', import.meta.url), 'utf8');
+  assert.match(html, /if\(game\.dodged\)\{e\.userData\.hit=true;continue\}/);
+  assert.match(html, /burst\(e\.position,e\.userData\.type\);e\.userData\.hit=true;e\.userData\.dead=true/);
+});

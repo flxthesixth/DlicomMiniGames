@@ -9,7 +9,7 @@ export function newGame(seed = 1, shields = 0) {
     lane: 1,
     score: 0, combo: 0, bestCombo: 0,
     multiplier: 1, surge: 0, jump: 0, slide: 0,
-    distance: 0, over: false,
+    distance: 0, over: false, dodged: false,
   };
 }
 
@@ -20,7 +20,7 @@ export function difficultyLevel(score) {
 
 export function advance(state, { lane = 0, collect = false, hit = false, hitType = null, jump = false, slide = false, dt = 0 } = {}) {
   if (state.over) return state;
-  const next = { ...state, score: state.score, surge: state.surge, combo: state.combo };
+  const next = { ...state, score: state.score, surge: state.surge, combo: state.combo, dodged: false };
   next.distance = state.distance + dt;
 
   // Input must take effect before collision in this same simulation step.
@@ -28,7 +28,8 @@ export function advance(state, { lane = 0, collect = false, hit = false, hitType
   if (slide && next.slide <= 0 && next.jump <= 0) next.slide = .48;
   const airborne = next.jump > 0;
   const sliding = next.slide > 0;
-  const dodged = hitType === 'ground' ? airborne : hitType === 'flying' ? sliding : false;
+  const dodged = hit && (hitType === 'ground' ? airborne : hitType === 'flying' ? sliding : false);
+  next.dodged = dodged;
   const effectiveHit = hit && !dodged;
   if (next.jump > 0) next.jump = Math.max(0, next.jump - dt);
   if (next.slide > 0) next.slide = Math.max(0, next.slide - dt);
