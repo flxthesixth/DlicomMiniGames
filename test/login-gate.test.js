@@ -9,6 +9,10 @@ const worker = readFileSync(new URL('../worker/index.js', import.meta.url), 'utf
 test('root is a login gate with X and named guest paths', () => {
   assert.match(login, /LOG IN WITH X/);
   assert.match(login, /id="guestName"/);
+  assert.match(login, /placeholder="retree the pro"/);
+  assert.match(login, /RUN<br>WITH <span>DILI\.<\/span>/);
+  assert.ok(!login.includes('IDENTITY CHECK / 01'));
+  assert.match(login, /background:rgba\(5,7,13,\.78\)/);
   assert.match(login, /\/auth\/guest/);
   assert.match(login, /login-silhouette\.png/);
   assert.ok(existsSync(new URL('../public/game.html', import.meta.url)));
