@@ -25,7 +25,7 @@ test('best run comes from current account and referrals require X login', () => 
   assert.match(worker, /guest: !!session\.guest/);
   assert.match(html, /high=Number\(d\.bestScore\|\|0\)/);
   assert.match(html, /if\(!d\.user\.guest\)/);
-  assert.match(html, /X LOGIN REQUIRED FOR REFERRALS/);
+  assert.match(html, /LOG IN WITH X FOR REFERRALS/);
   assert.match(worker, /path === '\/api\/referral'/);
   assert.match(worker, /referral_requires_x/);
   assert.match(worker, /INSERT OR IGNORE INTO referrals/);
@@ -56,6 +56,11 @@ test('referral panel posts a Super Dili invitation instead of showing a raw link
   assert.match(html, /id="refPost"[^>]*>POST ON X<\/button>/);
   assert.doesNotMatch(html, /INVITE LINK:/);
   assert.match(html, /My best score as Super Dili: \$\{high\}\. Let's run faster with me and save the Dili World!/);
+});
+
+test('guest referral CTA starts X login instead of remaining disabled', () => {
+  const html = readFileSync(new URL('../public/game.html', import.meta.url), 'utf8');
+  assert.match(html, /refPost\.disabled=false;refPost\.textContent='LOG IN WITH X FOR REFERRALS';refPost\.onclick=\(\)=>\{location\.href='\/auth\/x'\}/);
 });
 
 test('post score uses current score and the account referral URL', () => {
