@@ -20,6 +20,15 @@ test('collecting crystal adds points without charging super mode', () => {
   assert.ok(next.score > state.score);
 });
 
+test('premium gem awards more points than a crystal', () => {
+  const state = newGame(7);
+  const crystal = advance(state, { collect: true, dt: 0 });
+  const gem = advance(state, { gem: true, dt: 0 });
+  assert.equal(crystal.score, 10);
+  assert.equal(gem.score, 50);
+  assert.ok(gem.score > crystal.score);
+});
+
 test('three puzzle pieces activate surge and reset puzzle charge', () => {
   let state = newGame(7);
   state = advance(state, { puzzle: true, dt: 0 });

@@ -19,7 +19,7 @@ export function difficultyLevel(score) {
   return Math.min(6, 1 + Math.floor(Math.max(0, score) / 500));
 }
 
-export function advance(state, { lane = 0, collect = false, puzzle = false, quizCorrect = false, hit = false, hitType = null, jump = false, slide = false, dt = 0 } = {}) {
+export function advance(state, { lane = 0, collect = false, gem = false, puzzle = false, quizCorrect = false, hit = false, hitType = null, jump = false, slide = false, dt = 0 } = {}) {
   if (state.over) return state;
   const next = { ...state, score: state.score, surge: state.surge, combo: state.combo, dodged: false, destroyed: false, damaged: false };
   next.distance = state.distance + dt;
@@ -56,10 +56,10 @@ export function advance(state, { lane = 0, collect = false, puzzle = false, quiz
     }
   }
 
-  if (collect) {
+  if (collect || gem) {
     next.combo += 1;
     next.bestCombo = Math.max(next.bestCombo, next.combo);
-    next.score += 10 * next.multiplier;
+    next.score += (gem ? 50 : 10) * next.multiplier;
   }
 
   if (puzzle) {

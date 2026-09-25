@@ -36,11 +36,19 @@ test('best run comes from current account and referrals require X login', () => 
   assert.match(html, /\/game\?ref=\$\{x\.code\}/);
 });
 
-test('score banner uses supplied image template and draws account best score', () => {
+test('best-run panel saves the account best score banner', () => {
   const html = readFileSync(new URL('../public/game.html', import.meta.url), 'utf8');
   assert.match(html, /score-banner-template\.png/);
+  assert.match(html, /id="bestBanner"[^>]*>SAVE SCORE<\/button>/);
+  assert.match(html, /bestBanner'\)\.onclick=\(\)=>saveBanner\(high\)/);
   assert.match(html, /x\.drawImage\(img,0,0,b\.width,b\.height\)/);
-  assert.match(html, /x\.fillText\(String\(high\),1175,1168\)/);
+});
+
+test('end-run save button writes the current run score instead of best score', () => {
+  const html = readFileSync(new URL('../public/game.html', import.meta.url), 'utf8');
+  assert.match(html, /function saveBanner\(score\)/);
+  assert.match(html, /x\.fillText\(String\(score\),1175,1168\)/);
+  assert.match(html, /banner'\)\.onclick=\(\)=>saveBanner\(game\.score\)/);
 });
 
 test('referral panel posts a Super Dili invitation instead of showing a raw link', () => {

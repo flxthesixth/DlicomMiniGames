@@ -142,3 +142,19 @@ test('Retree spawns every fifteen seconds and switches at most three lanes', () 
   assert.match(html, /laneMoves:0/);
   assert.match(html, /laneMoves<3/);
 });
+
+test('premium gem animates, spawns every 22.5 seconds, and collects separately', () => {
+  const html = readFileSync(new URL('../public/game.html', import.meta.url), 'utf8');
+  assert.match(html, /dili-gem-%d\.png/);
+  assert.match(html, /lastGem>=22\.5/);
+  assert.match(html, /spawnGem\(\)/);
+  assert.match(html, /type='gem'|type:'gem'/);
+  assert.match(html, /let collect=false,gem=false/);
+});
+
+test('flying obstacle uses red hazard accents', () => {
+  const html = readFileSync(new URL('../public/game.html', import.meta.url), 'utf8');
+  assert.match(html, /droneAccent/);
+  assert.match(html, /color:0xff416c/);
+  assert.match(html, /emissive:0x6b1027/);
+});
