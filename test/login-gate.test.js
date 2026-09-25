@@ -16,6 +16,8 @@ test('root is a login gate with X and named guest paths', () => {
   assert.ok(!login.includes('IDENTITY CHECK / 01'));
   assert.match(login, /background:url\('\/assets\/login-hero\.jpg'\) center 35%\/cover no-repeat var\(--ink\)/);
   assert.match(login, /background:rgba\(5,7,13,\.78\)/);
+  assert.match(login, /rel="icon" href="\/assets\/dili-run-icon\.jpg"/);
+  assert.ok(existsSync(new URL('../public/assets/dili-run-icon.jpg', import.meta.url)));
   assert.match(login, /\/auth\/guest/);
   assert.doesNotMatch(login, /login-puzzle\.png/);
   assert.doesNotMatch(login, /login-silhouette\.png/);
