@@ -13,6 +13,12 @@ test('footer uses centered FLX play-post tagline', () => {
   assert.match(html, /\.foot\{[^}]*text-align:center/);
 });
 
+test('main game page uses the puzzle artwork as a 60 percent background layer', () => {
+  const html = readFileSync(new URL('../public/game.html', import.meta.url), 'utf8');
+  assert.match(html, /body:before\{[^}]*opacity:\.6[^}]*login-puzzle\.png/);
+  assert.match(html, /\.shell\{[^}]*position:relative;z-index:1/);
+});
+
 test('flying obstacle flies above sliding head with grounded shadow', () => {
   const html = readFileSync(new URL('../public/game.html', import.meta.url), 'utf8');
   assert.match(html, /g\.userData\.type='drone'/);

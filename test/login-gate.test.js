@@ -14,13 +14,10 @@ test('root is a login gate with X and named guest paths', () => {
   assert.match(login, /DILI<i>◆<\/i>RUN/);
   assert.doesNotMatch(login, /DLICOM RUNNER/);
   assert.ok(!login.includes('IDENTITY CHECK / 01'));
-  assert.match(login, /\.gate\{[^}]*background:#05070d/);
-  assert.match(login, /\.foot\{[^}]*background:#05070d/);
+  assert.match(login, /background:url\('\/assets\/login-hero\.jpg'\) center 35%\/cover no-repeat var\(--ink\)/);
+  assert.match(login, /background:rgba\(5,7,13,\.78\)/);
   assert.match(login, /\/auth\/guest/);
-  assert.match(login, /login-puzzle\.png/);
-  assert.match(login, /\.page:before\{[^}]*opacity:\.6/);
-  assert.match(login, /background:url\('\/assets\/login-puzzle\.png'\) 55% 35%\/cover no-repeat/);
-  assert.doesNotMatch(login, /login-hero\.jpg/);
+  assert.doesNotMatch(login, /login-puzzle\.png/);
   assert.doesNotMatch(login, /login-silhouette\.png/);
   assert.doesNotMatch(login, /filter:brightness\(0\)/);
   assert.ok(existsSync(new URL('../public/game.html', import.meta.url)));
@@ -31,9 +28,9 @@ test('login gate supports desktop, mobile, short screens, and iOS safe areas', (
   assert.match(login, /min-height:100svh/);
   assert.match(login, /env\(safe-area-inset-top\)/);
   assert.match(login, /env\(safe-area-inset-bottom\)/);
-  assert.match(login, /\.foot\{position:relative;z-index:2/);
+  assert.match(login, /\.foot\{position:static/);
   assert.match(login, /\.foot\{[^}]*font:900 12px monospace/);
-  assert.match(login, /\.foot\{[^}]*background:#05070d/);
+  assert.match(login, /background:rgba\(5,7,13,\.72\)/);
   assert.match(login, /font:700 16px Arial/);
 });
 
