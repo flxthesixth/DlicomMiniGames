@@ -46,6 +46,13 @@ test('slide control is swipe-only and gameplay box has fullscreen', () => {
   assert.match(html, /dy<0\?jumpRequested=true:slideRequested=true/);
 });
 
+test('mobile and fullscreen preserve the desktop horizontal camera field of view', () => {
+  const html = readFileSync(new URL('../public/game.html', import.meta.url), 'utf8');
+  assert.match(html, /BASE_CAMERA_FOV=58,BASE_CAMERA_ASPECT=21\/9/);
+  assert.match(html, /camera\.fov=camera\.aspect<BASE_CAMERA_ASPECT\?2\*Math\.atan\(Math\.tan\(BASE_CAMERA_FOV\*Math\.PI\/360\)\*BASE_CAMERA_ASPECT\/camera\.aspect\)\*180\/Math\.PI:BASE_CAMERA_FOV/);
+  assert.match(html, /document\.addEventListener\('fullscreenchange',.*resize\(\)/);
+});
+
 test('player collision window uses compact hitbox constants', () => {
   const html = readFileSync(new URL('../public/game.html', import.meta.url), 'utf8');
   assert.match(html, /PLAYER_LANE_HITBOX=\.44/);
