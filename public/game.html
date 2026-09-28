@@ -19,6 +19,7 @@
   .boardHead{display:flex;align-items:center;justify-content:space-between;gap:12px}
   .viewAll{border:1px solid var(--blue);color:#fff;padding:8px 12px;font:900 10px monospace;letter-spacing:.08em;text-decoration:none}
   .viewAll:hover{background:var(--blue)}
+  .prizeNote{margin:10px 0 0;color:#fff;font:900 10px monospace;letter-spacing:.08em}
 </style>
 </head>
 <body><div class="shell">
@@ -26,7 +27,7 @@
 <main><section class="intro"><h1>MAKE A<br><span>DILI</span><br>RUN AWAY.</h1><div class="brief"><b>HOW TO RUN</b><br>Swipe or press left/right to switch lanes. Press space to jump over red barriers. Press SLIDE or down/S to duck floating hazards. Catch crystals for points. Collect 3 puzzle pieces to trigger <b>DILI-SUPER MODE</b>: double score and immunity. Solve each math gate by choosing the lane with the correct answer. Avoid red noise.</div></section>
 <section class="arena" id="arena" aria-label="Dili Run game"><div class="hud"><div class="scorebox"><div>BEST<b id="best">00000</b></div><div>SCORE<b id="score">00000</b></div></div><div class="surge" id="surge">DILI-SUPER MODE ACTIVATED ×2</div><div class="quizPrompt" id="quizPrompt" hidden></div><div class="statusbox"><div>LIVES<b id="lives">◆◆◆</b></div><div>PUZZLE<b id="puzzleCount">0/3</b></div></div></div><button class="fsbtn" id="fsBtn" aria-label="Toggle fullscreen gameplay" title="Fullscreen">⛶</button><div class="overlay" id="overlay"><div><h2 id="stateTitle">READY?</h2><p id="stateCopy">Swipe or tap side to switch lanes. Space jumps low barriers. Slide ducks floating hazards.</p><button class="button" id="play">START RUN</button><div class="endActions" id="endActions" hidden><button class="button secondary" id="share">POST SCORE</button><button class="button secondary" id="banner">SAVE SCORE</button></div></div></div></section>
 <section class="below"><div class="panel"><span>BEST RUN</span><strong id="bestPanel">0</strong><button class="button secondary ref" id="bestBanner">SAVE SCORE</button></div><div class="panel"><span>SHIELD BOOST</span><strong id="shieldPanel">0 / 3</strong><button class="button secondary ref" id="refPost" disabled>POST ON X</button></div></section>
-<section class="board" id="board"><div class="panel wide"><div class="boardHead"><span>GLOBAL LEADERBOARD</span><a class="viewAll" href="/leaderboard.html">VIEW ALL</a></div><ol id="scores" class="scores"></ol></div></section>
+<section class="board" id="board"><div class="panel wide"><div class="boardHead"><span>GLOBAL LEADERBOARD</span><a class="viewAll" href="/leaderboard.html">VIEW ALL</a></div><p class="prizeNote">TOP 3 WILL RECEIVE PRIZES FROM DEVELOPER.</p><ol id="scores" class="scores"></ol></div></section>
 </main><footer class="foot">DILI RUN BY FLX · PLAY FIRST, POST THEN.</footer></div>
 <script type="module">
 import * as THREE from './vendor/three.module.min.js';

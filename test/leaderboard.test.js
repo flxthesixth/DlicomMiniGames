@@ -17,6 +17,7 @@ test('game page shows top three leaderboard entries with a full-board link', () 
   assert.match(html, /refreshBoard/);
   assert.match(html, /fetch\('\/api\/scores\?limit=3'\)/);
   assert.match(html, /href="\/leaderboard\.html"[^>]*>VIEW ALL<\/a>/);
+  assert.match(html, /TOP 3 WILL RECEIVE PRIZES FROM DEVELOPER\./);
   assert.match(html, /\/api\/scores\/submit/);
   assert.ok(html.indexOf('<section class="board"') > html.indexOf('<section class="below"'));
 });
@@ -24,6 +25,7 @@ test('game page shows top three leaderboard entries with a full-board link', () 
 test('full leaderboard page renders all available scores', () => {
   const html = readFileSync(new URL('../public/leaderboard.html', import.meta.url), 'utf8');
   assert.match(html, /GLOBAL LEADERBOARD/);
+  assert.match(html, /TOP 3 WILL RECEIVE PRIZES FROM DEVELOPER\./);
   assert.match(html, /fetch\(`\/api\/scores\?limit=50&offset=\$\{offset\}`\)/);
   assert.match(html, /id="loadMore"[^>]*>LOAD MORE<\/button>/);
   assert.match(html, /href="\/game\.html"[^>]*>BACK TO RUN<\/a>/);
