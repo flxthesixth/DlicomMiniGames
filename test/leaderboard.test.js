@@ -7,7 +7,11 @@ test('leaderboard endpoints exist and require login to submit', () => {
   assert.match(worker, /\/api\/scores\/submit/);
   assert.match(worker, /login_required/);
   assert.match(worker, /ON CONFLICT\(x_id\) DO UPDATE SET/);
-  assert.match(worker, /ORDER BY score DESC/);
+  assert.match(worker, /ORDER BY score DESC, updated_at ASC/);
+  assert.match(worker, /LEFT JOIN x_users xu ON xu\.x_id = s\.x_id/);
+  assert.match(worker, /AS verified/);
+  assert.match(worker, /PARTITION BY verified ORDER BY score DESC, updated_at ASC/);
+  assert.match(worker, /AS prizeRank/);
   assert.match(worker, /LIMIT \?1 OFFSET \?2/);
 });
 
@@ -17,7 +21,9 @@ test('game page shows top three leaderboard entries with a full-board link', () 
   assert.match(html, /refreshBoard/);
   assert.match(html, /fetch\('\/api\/scores\?limit=3'\)/);
   assert.match(html, /href="\/leaderboard\.html"[^>]*>VIEW ALL<\/a>/);
-  assert.match(html, /TOP 3 WILL RECEIVE PRIZES FROM DEVELOPER\./);
+  assert.match(html, /TOP 3 VERIFIED RUNNERS WILL RECEIVE PRIZES FROM DEVELOPER\./);
+  assert.match(html, /x\.verified\?' ✓':''/);
+  assert.match(html, /medals\[x\.prizeRank\]/);
   assert.match(html, /\/api\/scores\/submit/);
   assert.ok(html.indexOf('<section class="board"') > html.indexOf('<section class="below"'));
 });
@@ -25,7 +31,9 @@ test('game page shows top three leaderboard entries with a full-board link', () 
 test('full leaderboard page renders all available scores', () => {
   const html = readFileSync(new URL('../public/leaderboard.html', import.meta.url), 'utf8');
   assert.match(html, /GLOBAL LEADERBOARD/);
-  assert.match(html, /TOP 3 WILL RECEIVE PRIZES FROM DEVELOPER\./);
+  assert.match(html, /TOP 3 VERIFIED RUNNERS WILL RECEIVE PRIZES FROM DEVELOPER\./);
+  assert.match(html, /x\.verified\?' ✓':''/);
+  assert.match(html, /medals\[x\.prizeRank\]/);
   assert.match(html, /fetch\(`\/api\/scores\?limit=50&offset=\$\{offset\}`\)/);
   assert.match(html, /id="loadMore"[^>]*>LOAD MORE<\/button>/);
   assert.match(html, /href="\/game\.html"[^>]*>BACK TO RUN<\/a>/);

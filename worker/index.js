@@ -204,7 +204,19 @@ async function topScores(env, url) {
   const limit = Math.min(50, Math.max(1, Number(url.searchParams.get('limit') || 10)));
   const offset = Math.max(0, Math.floor(Number(url.searchParams.get('offset') || 0)));
   const { results } = await env.DB.prepare(
-    'SELECT username, name, score, combo FROM scores ORDER BY score DESC LIMIT ?1 OFFSET ?2'
+    `WITH enriched AS (
+       SELECT s.username, s.name, s.score, s.combo, s.updated_at,
+              CASE WHEN xu.x_id IS NULL THEN 0 ELSE 1 END AS verified
+       FROM scores s LEFT JOIN x_users xu ON xu.x_id = s.x_id
+     ), ranked AS (
+       SELECT *, ROW_NUMBER() OVER (
+         PARTITION BY verified ORDER BY score DESC, updated_at ASC
+       ) AS eligible_rank
+       FROM enriched
+     )
+     SELECT username, name, score, combo, verified,
+            CASE WHEN verified = 1 AND eligible_rank <= 3 THEN eligible_rank END AS prizeRank
+     FROM ranked ORDER BY score DESC, updated_at ASC LIMIT ?1 OFFSET ?2`
   ).bind(limit, offset).all();
   return json({ scores: results });
 }
