@@ -13,9 +13,9 @@ test('footer uses centered FLX play-post tagline', () => {
   assert.match(html, /\.foot\{[^}]*text-align:center/);
 });
 
-test('main game page uses the puzzle artwork as a 60 percent background layer', () => {
+test('main game page uses the darkened Dili sky artwork', () => {
   const html = readFileSync(new URL('../public/game.html', import.meta.url), 'utf8');
-  assert.match(html, /body:before\{[^}]*opacity:\.6[^}]*login-puzzle\.png[^}]*background-attachment:fixed/);
+  assert.match(html, /body:before\{[^}]*background:linear-gradient\(#05070dcc,#05070dcc\),url\('\.\/assets\/dili-man-sky\.webp'\)[^}]*background-attachment:fixed/);
   assert.match(html, /@media\(max-width:680px\)\{body:before\{background-attachment:scroll/);
   assert.match(html, /\.shell\{[^}]*position:relative;z-index:1/);
 });

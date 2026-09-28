@@ -202,9 +202,10 @@ async function applyReferral(env, request) {
 async function topScores(env, url) {
   if (!env.DB) return json({ error: 'leaderboard_not_configured' }, 503);
   const limit = Math.min(50, Math.max(1, Number(url.searchParams.get('limit') || 10)));
+  const offset = Math.max(0, Math.floor(Number(url.searchParams.get('offset') || 0)));
   const { results } = await env.DB.prepare(
-    'SELECT username, name, score, combo FROM scores ORDER BY score DESC LIMIT ?1'
-  ).bind(limit).all();
+    'SELECT username, name, score, combo FROM scores ORDER BY score DESC LIMIT ?1 OFFSET ?2'
+  ).bind(limit, offset).all();
   return json({ scores: results });
 }
 

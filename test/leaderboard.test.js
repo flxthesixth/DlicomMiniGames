@@ -8,14 +8,25 @@ test('leaderboard endpoints exist and require login to submit', () => {
   assert.match(worker, /login_required/);
   assert.match(worker, /ON CONFLICT\(x_id\) DO UPDATE SET/);
   assert.match(worker, /ORDER BY score DESC/);
+  assert.match(worker, /LIMIT \?1 OFFSET \?2/);
 });
 
-test('game page shows leaderboard after account panels and posts score after run', () => {
+test('game page shows top three leaderboard entries with a full-board link', () => {
   const html = readFileSync(new URL('../public/game.html', import.meta.url), 'utf8');
   assert.match(html, /GLOBAL LEADERBOARD/);
   assert.match(html, /refreshBoard/);
+  assert.match(html, /fetch\('\/api\/scores\?limit=3'\)/);
+  assert.match(html, /href="\/leaderboard\.html"[^>]*>VIEW ALL<\/a>/);
   assert.match(html, /\/api\/scores\/submit/);
   assert.ok(html.indexOf('<section class="board"') > html.indexOf('<section class="below"'));
+});
+
+test('full leaderboard page renders all available scores', () => {
+  const html = readFileSync(new URL('../public/leaderboard.html', import.meta.url), 'utf8');
+  assert.match(html, /GLOBAL LEADERBOARD/);
+  assert.match(html, /fetch\(`\/api\/scores\?limit=50&offset=\$\{offset\}`\)/);
+  assert.match(html, /id="loadMore"[^>]*>LOAD MORE<\/button>/);
+  assert.match(html, /href="\/game\.html"[^>]*>BACK TO RUN<\/a>/);
 });
 
 test('best run comes from current account and referrals require X login', () => {
