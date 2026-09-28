@@ -172,6 +172,16 @@ test('Retree spawns every fifteen seconds and switches at most three lanes', () 
   assert.match(html, /laneMoves<3/);
 });
 
+test('rolling barrel crosses lanes horizontally every 7.5 seconds', () => {
+  const html = readFileSync(new URL('../public/game.html', import.meta.url), 'utf8');
+  assert.match(html, /lastBarrel>=7\.5/);
+  assert.match(html, /spawnBarrel\(\)/);
+  assert.match(html, /new THREE\.CylinderGeometry/);
+  assert.match(html, /type:'barrel'/);
+  assert.match(html, /barrelDir/);
+  assert.match(html, /rotation\.z-=/);
+});
+
 test('premium gem animates, spawns every 22.5 seconds, and collects separately', () => {
   const html = readFileSync(new URL('../public/game.html', import.meta.url), 'utf8');
   assert.match(html, /dili-gem-%d\.png/);
