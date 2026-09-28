@@ -27,6 +27,11 @@ test('game page keeps OAuth header link and posts to leaderboard', () => {
   assert.match(html, /api\/scores\/submit/);
 });
 
+test('session verification decodes UTF-8 profile names', () => {
+  const worker = readFileSync(new URL('../worker/index.js', import.meta.url), 'utf8');
+  assert.match(worker, /new TextDecoder\(\)\.decode\(Uint8Array\.from\(atob\(data\.replace\(\/-\/g, '\+'\)\.replace\(\/_\/g, '\/'\)\), c => c\.charCodeAt\(0\)\)\)/);
+});
+
 test('wrangler config serves worker with assets binding', () => {
   const cfg = readFileSync(new URL('../wrangler.jsonc', import.meta.url), 'utf8');
   assert.match(cfg, /"main":\s*"worker\/index\.js"/);

@@ -131,7 +131,7 @@ async function verifySession(cookie, secret) {
   const m = cookie.match(/session=([A-Za-z0-9_\-]+)\.([A-Za-z0-9_\-]+)/);
   if (!m) return null;
   const [, data, sig] = m;
-  const payload = atob(data.replace(/-/g, '+').replace(/_/g, '/'));
+  const payload = new TextDecoder().decode(Uint8Array.from(atob(data.replace(/-/g, '+').replace(/_/g, '/')), c => c.charCodeAt(0)));
   if ((await sign(payload, secret)) !== sig) return null;
   const session = JSON.parse(payload);
   if (!session.exp || session.exp < Date.now()) return null;
