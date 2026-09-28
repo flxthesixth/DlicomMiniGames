@@ -24,7 +24,15 @@ test('W, ArrowUp, and Space trigger jump while Dili renders closer to the camera
   const html = readFileSync(new URL('../public/game.html', import.meta.url), 'utf8');
   assert.match(html, /\['KeyW','ArrowUp','Space'\]\.includes\(e\.code\)/);
   assert.match(html, /W, UP, or SPACE to jump/);
-  assert.match(html, /player\.position\.set\(0,0,4\.15\)/);
+  assert.match(html, /player\.position\.set\(0,0,4\.5\)/);
+});
+
+test('gameplay arena renders Dili Man Sky through a transparent WebGL scene', () => {
+  const html = readFileSync(new URL('../public/game.html', import.meta.url), 'utf8');
+  assert.match(html, /\.arena\{[^}]*dili-man-sky\.webp/);
+  assert.match(html, /new THREE\.WebGLRenderer\(\{antialias:true,alpha:true,powerPreference:'high-performance'\}\)/);
+  assert.match(html, /renderer\.setClearColor\(0x000000,0\)/);
+  assert.doesNotMatch(html, /scene\.background=new THREE\.Color\(0x05070d\)/);
 });
 
 test('flying obstacle flies above sliding head with grounded shadow', () => {
