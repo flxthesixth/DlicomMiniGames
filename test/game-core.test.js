@@ -172,21 +172,3 @@ test('damage resets combo multiplier', () => {
   assert.equal(next.combo, 0);
   assert.equal(next.comboMultiplier, 1);
 });
-
-test('daily missions track crystals, skilled dodges, and correct quizzes', () => {
-  let state = newGame(7);
-  state = advance(state, { collect: true, dt: 0 });
-  state = advance(state, { jump: true, hit: true, hitType: 'ground', dt: 0 });
-  state = advance(state, { quizCorrect: true, dt: 0 });
-  assert.deepEqual(state.missions, { crystals: 1, dodges: 1, quizzes: 1 });
-  assert.equal(state.dailyComplete, false);
-});
-
-test('completing daily missions unlocks the DAILY ACE title', () => {
-  const state = { ...newGame(7), missions: { crystals: 19, dodges: 4, quizzes: 2 } };
-  let next = advance(state, { collect: true, dt: 0 });
-  next = advance(next, { jump: true, hit: true, hitType: 'ground', dt: 0 });
-  next = advance(next, { quizCorrect: true, dt: 0 });
-  assert.equal(next.dailyComplete, true);
-  assert.equal(next.title, 'DAILY ACE');
-});

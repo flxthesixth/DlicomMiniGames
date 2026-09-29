@@ -10,8 +10,6 @@ export function newGame(seed = 1, shields = 0) {
     score: 0, combo: 0, bestCombo: 0, puzzlePieces: 0,
     multiplier: 1, comboMultiplier: 1, surge: 0, jump: 0, slide: 0,
     lives: 3, invulnerable: 0,
-    missions: { crystals: 0, dodges: 0, quizzes: 0 },
-    dailyComplete: false, title: 'RUNNER',
     distance: 0, over: false, dodged: false, destroyed: false, damaged: false,
   };
 }
@@ -66,14 +64,6 @@ export function advance(state, { lane = 0, collect = false, gem = false, puzzle 
     const base = gem ? 50 : quizCorrect ? 25 : nearMiss ? 15 : 10;
     next.score += base * next.multiplier * next.comboMultiplier;
   }
-
-  next.missions = {
-    crystals: state.missions.crystals + (collect ? 1 : 0),
-    dodges: state.missions.dodges + (actionDodge ? 1 : 0),
-    quizzes: state.missions.quizzes + (quizCorrect ? 1 : 0),
-  };
-  next.dailyComplete = next.missions.crystals >= 20 && next.missions.dodges >= 5 && next.missions.quizzes >= 3;
-  if (next.dailyComplete) next.title = 'DAILY ACE';
 
   if (puzzle) {
     next.puzzlePieces += 1;

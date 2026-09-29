@@ -38,14 +38,9 @@ test('daily leaderboard records each account best score for the current UTC day'
   assert.match(html, /\/api\/scores\?board=daily&limit=50/);
 });
 
-test('game page shows daily missions and unlocked title', () => {
+test('game page omits daily missions and cosmetic mission title', () => {
   const html = readFileSync(new URL('../public/game.html', import.meta.url), 'utf8');
-  assert.match(html, /DAILY MISSIONS/);
-  assert.match(html, /id="missionCrystals"/);
-  assert.match(html, /id="missionDodges"/);
-  assert.match(html, /id="missionQuizzes"/);
-  assert.match(html, /id="playerTitle"/);
-  assert.match(html, /DAILY ACE/);
+  assert.doesNotMatch(html, /DAILY MISSIONS|missionCrystals|missionDodges|missionQuizzes|playerTitle|DAILY ACE|diliDaily/);
 });
 
 test('game page shows top three leaderboard entries with a full-board link', () => {
