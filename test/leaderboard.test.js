@@ -27,6 +27,27 @@ test('score submission requires a short-lived server run ticket', () => {
   assert.match(html, /runToken/);
 });
 
+test('daily leaderboard records each account best score for the current UTC day', () => {
+  const worker = readFileSync(new URL('../worker/index.js', import.meta.url), 'utf8');
+  const schema = readFileSync(new URL('../schema.sql', import.meta.url), 'utf8');
+  const html = readFileSync(new URL('../public/leaderboard.html', import.meta.url), 'utf8');
+  assert.match(schema, /CREATE TABLE IF NOT EXISTS daily_scores/);
+  assert.match(worker, /url\.searchParams\.get\('board'\) === 'daily'/);
+  assert.match(worker, /INSERT INTO daily_scores/);
+  assert.match(html, /id="dailyBoard"/);
+  assert.match(html, /\/api\/scores\?board=daily&limit=50/);
+});
+
+test('game page shows daily missions and unlocked title', () => {
+  const html = readFileSync(new URL('../public/game.html', import.meta.url), 'utf8');
+  assert.match(html, /DAILY MISSIONS/);
+  assert.match(html, /id="missionCrystals"/);
+  assert.match(html, /id="missionDodges"/);
+  assert.match(html, /id="missionQuizzes"/);
+  assert.match(html, /id="playerTitle"/);
+  assert.match(html, /DAILY ACE/);
+});
+
 test('game page shows top three leaderboard entries with a full-board link', () => {
   const html = readFileSync(new URL('../public/game.html', import.meta.url), 'utf8');
   assert.match(html, /GLOBAL LEADERBOARD/);

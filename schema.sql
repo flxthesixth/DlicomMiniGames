@@ -10,6 +10,18 @@ CREATE TABLE IF NOT EXISTS scores (
 );
 CREATE INDEX IF NOT EXISTS idx_scores_score ON scores(score DESC);
 
+CREATE TABLE IF NOT EXISTS daily_scores (
+  day TEXT NOT NULL,
+  x_id TEXT NOT NULL,
+  username TEXT NOT NULL,
+  name TEXT,
+  score INTEGER NOT NULL DEFAULT 0,
+  combo INTEGER NOT NULL DEFAULT 0,
+  updated_at INTEGER NOT NULL,
+  PRIMARY KEY (day, x_id)
+);
+CREATE INDEX IF NOT EXISTS idx_daily_scores_rank ON daily_scores(day, score DESC);
+
 CREATE TABLE IF NOT EXISTS referrals (
   invitee_x_id TEXT PRIMARY KEY,
   inviter_x_id TEXT NOT NULL,

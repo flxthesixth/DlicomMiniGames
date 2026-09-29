@@ -204,11 +204,15 @@ async function topScores(env, url) {
   if (!env.DB) return json({ error: 'leaderboard_not_configured' }, 503);
   const limit = Math.min(50, Math.max(1, Number(url.searchParams.get('limit') || 10)));
   const offset = Math.max(0, Math.floor(Number(url.searchParams.get('offset') || 0)));
-  const { results } = await env.DB.prepare(
+  const daily = url.searchParams.get('board') === 'daily';
+  const day = new Date().toISOString().slice(0, 10);
+  const source = daily ? 'daily_scores' : 'scores';
+  const where = daily ? 'WHERE s.day = ?3' : '';
+  const statement = env.DB.prepare(
     `WITH enriched AS (
        SELECT s.username, s.name, s.score, s.combo, s.updated_at,
               CASE WHEN xu.x_id IS NULL THEN 0 ELSE 1 END AS verified
-       FROM scores s LEFT JOIN x_users xu ON xu.x_id = s.x_id
+       FROM ${source} s LEFT JOIN x_users xu ON xu.x_id = s.x_id ${where}
      ), ranked AS (
        SELECT *, ROW_NUMBER() OVER (
          PARTITION BY verified ORDER BY score DESC, updated_at ASC
@@ -218,8 +222,11 @@ async function topScores(env, url) {
      SELECT username, name, score, combo, verified,
             CASE WHEN verified = 1 AND eligible_rank <= 3 THEN eligible_rank END AS prizeRank
      FROM ranked ORDER BY score DESC, updated_at ASC LIMIT ?1 OFFSET ?2`
-  ).bind(limit, offset).all();
-  return json({ scores: results });
+  );
+  const { results } = daily
+    ? await statement.bind(limit, offset, day).all()
+    : await statement.bind(limit, offset).all();
+  return json({ scores: results, board: daily ? 'daily' : 'global', day: daily ? day : null });
 }
 
 async function startRun(env, request) {
@@ -234,7 +241,7 @@ async function startRun(env, request) {
   const day = new Date(now).toISOString().slice(0, 10);
   let seed = 2166136261;
   for (const c of day) seed = Math.imul(seed ^ c.charCodeAt(0), 16777619) >>> 0;
-  return json({ runToken: token, dailySeed: seed, expiresAt: now + 1000 * 60 * 30 });
+  return json({ runToken: token, dailySeed: seed, day, expiresAt: now + 1000 * 60 * 30 });
 }
 
 async function submitScore(env, request) {
@@ -270,7 +277,18 @@ async function submitScore(env, request) {
        username = excluded.username,
        name = excluded.name,
        updated_at = excluded.updated_at`
-  ).bind(session.id, session.username, session.name || null, score, combo, Date.now()).run();
+  ).bind(session.id, session.username, session.name || null, score, combo, now).run();
+  const day = new Date(now).toISOString().slice(0, 10);
+  await env.DB.prepare(
+    `INSERT INTO daily_scores (day, x_id, username, name, score, combo, updated_at)
+     VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7)
+     ON CONFLICT(day, x_id) DO UPDATE SET
+       score = MAX(score, excluded.score),
+       combo = MAX(combo, excluded.combo),
+       username = excluded.username,
+       name = excluded.name,
+       updated_at = excluded.updated_at`
+  ).bind(day, session.id, session.username, session.name || null, score, combo, now).run();
   const rank = await env.DB.prepare(
     'SELECT COUNT(*) + 1 AS rank FROM scores WHERE score > ?1'
   ).bind(score).first();
