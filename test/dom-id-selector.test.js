@@ -213,6 +213,15 @@ test('gameplay exposes combo, level, near miss, designed patterns, and daily see
   assert.match(html, /function seeded\(\)/);
 });
 
+test('run pauses on tab hide, audio mute persists, and reduced motion is respected', () => {
+  const html = readFileSync(new URL('../public/game.html', import.meta.url), 'utf8');
+  assert.match(html, /visibilitychange.*setPaused\(document\.hidden\)/s);
+  assert.match(html, /localStorage\.dlicomRunnerMute/);
+  assert.match(html, /id="muteBtn"/);
+  assert.match(html, /prefers-reduced-motion:reduce/);
+  assert.match(html, /if\(!running\|\|paused\)return/);
+});
+
 test('premium gem animates, spawns every 22.5 seconds, and collects separately', () => {
   const html = readFileSync(new URL('../public/game.html', import.meta.url), 'utf8');
   assert.match(html, /dili-gem-%d\.png/);

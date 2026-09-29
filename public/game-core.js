@@ -14,6 +14,12 @@ export function newGame(seed = 1, shields = 0) {
   };
 }
 
+export function seededRandom(seed, sequence) {
+  const x = Math.imul(sequence + 0x9E3779B9, 0x85EBCA6B) ^ seed;
+  const y = Math.imul(x ^ (x >>> 13), 0xC2B2AE35);
+  return ((y ^ (y >>> 16)) >>> 0) / 4294967296;
+}
+
 export function difficultyLevel(score) {
   // Level 1..6: rises every 500 score. Drives spawn mix and speed pacing.
   return Math.min(6, 1 + Math.floor(Math.max(0, score) / 500));

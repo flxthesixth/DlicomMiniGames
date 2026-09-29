@@ -1,6 +1,15 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { advance, difficultyLevel, newGame } from '../public/game-core.js';
+import { advance, difficultyLevel, newGame, seededRandom } from '../public/game-core.js';
+
+test('seeded RNG is deterministic per (seed, sequence) pair', () => {
+  const a = Array.from({length: 200}, (_, i) => seededRandom(2345823653, i));
+  const b = Array.from({length: 200}, (_, i) => seededRandom(2345823653, i));
+  assert.deepEqual(a, b);
+  assert.ok(new Set(a).size > 100, 'sequence should vary');
+  const c = Array.from({length: 200}, (_, i) => seededRandom(999, i));
+  assert.notDeepEqual(a, c, 'different seed should change spawn sequence');
+});
 
 test('lane input stays inside three runner lanes', () => {
   let state = newGame(7);
