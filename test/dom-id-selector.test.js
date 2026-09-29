@@ -162,26 +162,42 @@ test('branding is DILI RUN and puzzle count is compact', () => {
   assert.match(html, /`\$\{game\.puzzlePieces\}\/3`/);
 });
 
-test('Retree spawns every fifteen seconds and switches at most three lanes', () => {
+test('Retree spawns every fifteen seconds with level-scaled lane switches', () => {
   const html = readFileSync(new URL('../public/game.html', import.meta.url), 'utf8');
   assert.match(html, /lastRetree>=15/);
   assert.match(html, /spawnRetree\(\)/);
   assert.match(html, /dili-retree-%d\.png/);
   assert.match(html, /type:'retree'/);
   assert.match(html, /laneMoves:0/);
-  assert.match(html, /laneMoves<3/);
+  assert.match(html, /maxLaneMoves/);
 });
 
-test('rolling barrel crosses lanes horizontally every 7.5 seconds with warning', () => {
+test('rolling barrel crosses lanes horizontally every 7.5 seconds without warning', () => {
   const html = readFileSync(new URL('../public/game.html', import.meta.url), 'utf8');
-  assert.match(html, /lastBarrel>=6\.8/);
-  assert.match(html, /barrelWarning/);
+  assert.doesNotMatch(html, /BARREL INCOMING|barrelWarning/);
   assert.match(html, /lastBarrel>=7\.5/);
   assert.match(html, /spawnBarrel\(\)/);
   assert.match(html, /new THREE\.CylinderGeometry/);
   assert.match(html, /type:'barrel'/);
   assert.match(html, /barrelDir/);
   assert.match(html, /rotation\.z-=/);
+});
+
+test('Retree warns before spawn and gains lane steps with level', () => {
+  const html = readFileSync(new URL('../public/game.html', import.meta.url), 'utf8');
+  assert.match(html, /RETREE INCOMING/);
+  assert.match(html, /lastRetree>=14\.3/);
+  assert.match(html, /maxLaneMoves:2\+level/);
+  assert.match(html, /shiftStep:Math\.max\(5,9-level\*\.6\)/);
+  assert.match(html, /laneMoves<e\.userData\.maxLaneMoves/);
+});
+
+test('combo is compact and base obstacles get denser each level', () => {
+  const html = readFileSync(new URL('../public/game.html', import.meta.url), 'utf8');
+  assert.match(html, /id="combo">0X1/);
+  assert.match(html, /`\$\{game\.combo\}X\$\{game\.comboMultiplier\}`/);
+  assert.match(html, /spawnInterval=Math\.max\(\.4,\.7-\(level-1\)\*\.06\)/);
+  assert.match(html, /lastSpawn>spawnInterval/);
 });
 
 test('gameplay exposes combo, level, near miss, designed patterns, and daily seed', () => {
