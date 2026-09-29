@@ -209,6 +209,8 @@ test('gameplay exposes combo, level, near miss, designed patterns, and daily see
   assert.match(html, /nearMiss:true/);
   assert.match(html, /spawnPattern\(\)/);
   assert.match(html, /dailySeed/);
+  assert.doesNotMatch(html, /spawn\(\)[^}]*Math\.random/);
+  assert.match(html, /function seeded\(\)/);
 });
 
 test('premium gem animates, spawns every 22.5 seconds, and collects separately', () => {
