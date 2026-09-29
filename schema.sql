@@ -18,6 +18,15 @@ CREATE TABLE IF NOT EXISTS referrals (
 );
 CREATE INDEX IF NOT EXISTS idx_referrals_inviter ON referrals(inviter_x_id);
 
+CREATE TABLE IF NOT EXISTS run_tickets (
+  token TEXT PRIMARY KEY,
+  x_id TEXT NOT NULL,
+  started_at INTEGER NOT NULL,
+  expires_at INTEGER NOT NULL,
+  used_at INTEGER
+);
+CREATE INDEX IF NOT EXISTS idx_run_tickets_expiry ON run_tickets(expires_at);
+
 CREATE TABLE IF NOT EXISTS x_users (
   x_id TEXT PRIMARY KEY,
   username TEXT NOT NULL COLLATE NOCASE UNIQUE,

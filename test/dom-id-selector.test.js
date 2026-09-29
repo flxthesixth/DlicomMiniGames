@@ -134,7 +134,7 @@ test('quiz gate presents three lanes and a math prompt', () => {
 test('HUD separates left scores, centered super status, and right resources', () => {
   const html = readFileSync(new URL('../public/game.html', import.meta.url), 'utf8');
   assert.match(html, /class="scorebox"><div>BEST<b id="best"[^<]*<\/b><\/div><div>SCORE<b id="score"/);
-  assert.match(html, /class="statusbox"><div>LIVES<b id="lives"[^<]*<\/b><\/div><div>PUZZLE<b id="puzzleCount"/);
+  assert.match(html, /class="statusbox"><div>LEVEL<b id="level"[^<]*<\/b><\/div><div>LIVES<b id="lives"[^<]*<\/b><\/div><div>PUZZLE<b id="puzzleCount"/);
   assert.match(html, /\.surge\{[^}]*position:absolute;top:58px;left:50%/);
   assert.match(html, /\.quizPrompt\{[^}]*top:100px/);
 });
@@ -172,14 +172,25 @@ test('Retree spawns every fifteen seconds and switches at most three lanes', () 
   assert.match(html, /laneMoves<3/);
 });
 
-test('rolling barrel crosses lanes horizontally every 7.5 seconds', () => {
+test('rolling barrel crosses lanes horizontally every 7.5 seconds with warning', () => {
   const html = readFileSync(new URL('../public/game.html', import.meta.url), 'utf8');
+  assert.match(html, /lastBarrel>=6\.8/);
+  assert.match(html, /barrelWarning/);
   assert.match(html, /lastBarrel>=7\.5/);
   assert.match(html, /spawnBarrel\(\)/);
   assert.match(html, /new THREE\.CylinderGeometry/);
   assert.match(html, /type:'barrel'/);
   assert.match(html, /barrelDir/);
   assert.match(html, /rotation\.z-=/);
+});
+
+test('gameplay exposes combo, level, near miss, designed patterns, and daily seed', () => {
+  const html = readFileSync(new URL('../public/game.html', import.meta.url), 'utf8');
+  assert.match(html, /id="combo"/);
+  assert.match(html, /id="level"/);
+  assert.match(html, /nearMiss:true/);
+  assert.match(html, /spawnPattern\(\)/);
+  assert.match(html, /dailySeed/);
 });
 
 test('premium gem animates, spawns every 22.5 seconds, and collects separately', () => {

@@ -148,3 +148,27 @@ test('collision result flags reset outside their collision frame', () => {
   assert.equal(next.destroyed, false);
   assert.equal(next.damaged, false);
 });
+
+test('near misses and skilled dodges build combo and score', () => {
+  let state = advance(newGame(7), { nearMiss: true, dt: 0 });
+  assert.equal(state.combo, 1);
+  assert.equal(state.score, 15);
+  state = advance(state, { jump: true, hit: true, hitType: 'ground', dt: 0 });
+  assert.equal(state.combo, 2);
+  assert.ok(state.score > 15);
+});
+
+test('combo milestones increase scoring multiplier without replacing surge', () => {
+  let state = newGame(7);
+  for (let i = 0; i < 5; i++) state = advance(state, { collect: true, dt: 0 });
+  assert.equal(state.combo, 5);
+  assert.equal(state.comboMultiplier, 2);
+  assert.equal(advance(state, { collect: true, dt: 0 }).score - state.score, 20);
+});
+
+test('damage resets combo multiplier', () => {
+  const state = { ...newGame(7), combo: 8, comboMultiplier: 2 };
+  const next = advance(state, { hit: true, dt: 0 });
+  assert.equal(next.combo, 0);
+  assert.equal(next.comboMultiplier, 1);
+});

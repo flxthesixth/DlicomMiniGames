@@ -8,7 +8,7 @@ export function newGame(seed = 1, shields = 0) {
     seed, shields,
     lane: 1,
     score: 0, combo: 0, bestCombo: 0, puzzlePieces: 0,
-    multiplier: 1, surge: 0, jump: 0, slide: 0,
+    multiplier: 1, comboMultiplier: 1, surge: 0, jump: 0, slide: 0,
     lives: 3, invulnerable: 0,
     distance: 0, over: false, dodged: false, destroyed: false, damaged: false,
   };
@@ -19,7 +19,7 @@ export function difficultyLevel(score) {
   return Math.min(6, 1 + Math.floor(Math.max(0, score) / 500));
 }
 
-export function advance(state, { lane = 0, collect = false, gem = false, puzzle = false, quizCorrect = false, hit = false, hitType = null, jump = false, slide = false, dt = 0 } = {}) {
+export function advance(state, { lane = 0, collect = false, gem = false, puzzle = false, quizCorrect = false, nearMiss = false, hit = false, hitType = null, jump = false, slide = false, dt = 0 } = {}) {
   if (state.over) return state;
   const next = { ...state, score: state.score, surge: state.surge, combo: state.combo, dodged: false, destroyed: false, damaged: false };
   next.distance = state.distance + dt;
@@ -47,6 +47,7 @@ export function advance(state, { lane = 0, collect = false, gem = false, puzzle 
     } else {
       next.lives -= 1;
       next.combo = 0;
+      next.comboMultiplier = 1;
       next.damaged = true;
       if (next.lives <= 0) {
         next.over = true;
@@ -56,10 +57,12 @@ export function advance(state, { lane = 0, collect = false, gem = false, puzzle 
     }
   }
 
-  if (collect || gem) {
+  if (collect || gem || nearMiss || actionDodge || quizCorrect) {
     next.combo += 1;
+    next.comboMultiplier = Math.min(4, 1 + Math.floor(next.combo / 5));
     next.bestCombo = Math.max(next.bestCombo, next.combo);
-    next.score += (gem ? 50 : 10) * next.multiplier;
+    const base = gem ? 50 : quizCorrect ? 25 : nearMiss ? 15 : 10;
+    next.score += base * next.multiplier * next.comboMultiplier;
   }
 
   if (puzzle) {
@@ -70,8 +73,6 @@ export function advance(state, { lane = 0, collect = false, gem = false, puzzle 
       next.multiplier = 2;
     }
   }
-
-  if (quizCorrect) next.score += 25 * next.multiplier;
 
   if (next.surge > 0) {
     next.surge = Math.max(0, next.surge - dt);

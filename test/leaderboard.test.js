@@ -15,6 +15,18 @@ test('leaderboard endpoints exist and require login to submit', () => {
   assert.match(worker, /LIMIT \?1 OFFSET \?2/);
 });
 
+test('score submission requires a short-lived server run ticket', () => {
+  const worker = readFileSync(new URL('../worker/index.js', import.meta.url), 'utf8');
+  const html = readFileSync(new URL('../public/game.html', import.meta.url), 'utf8');
+  assert.match(worker, /path === '\/api\/runs\/start'/);
+  assert.match(worker, /run_required/);
+  assert.match(worker, /run_expired/);
+  assert.match(worker, /score_rate_invalid/);
+  assert.match(worker, /run_used/);
+  assert.match(html, /fetch\('\/api\/runs\/start'/);
+  assert.match(html, /runToken/);
+});
+
 test('game page shows top three leaderboard entries with a full-board link', () => {
   const html = readFileSync(new URL('../public/game.html', import.meta.url), 'utf8');
   assert.match(html, /GLOBAL LEADERBOARD/);
