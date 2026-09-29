@@ -18,12 +18,12 @@ export default {
     if (path === '/api/runs/start' && request.method === 'POST') return startRun(env, request);
     if (path === '/api/scores/submit' && request.method === 'POST') return submitScore(env, request);
     if (path === '/logout') return logout();
-    if (path === '/game.html' && !(await verifySession(request.headers.get('Cookie') || '', env.SESSION_SECRET))) {
+    if ((path === '/game' || path === '/game.html') && !(await verifySession(request.headers.get('Cookie') || '', env.SESSION_SECRET))) {
       return Response.redirect(`${url.origin}/`, 302);
     }
 
     const asset = await env.ASSETS.fetch(request);
-    if (path === '/' || path === '/index.html' || path === '/game.html') {
+    if (path === '/' || path === '/index.html' || path === '/game' || path === '/game.html') {
       const headers = new Headers(asset.headers);
       headers.set('Cache-Control', 'no-store');
       return new Response(asset.body, { status: asset.status, statusText: asset.statusText, headers });
@@ -129,14 +129,17 @@ async function callback(env, request, url) {
 }
 
 async function verifySession(cookie, secret) {
-  const m = cookie.match(/session=([A-Za-z0-9_\-]+)\.([A-Za-z0-9_\-]+)/);
-  if (!m) return null;
-  const [, data, sig] = m;
-  const payload = new TextDecoder().decode(Uint8Array.from(atob(data.replace(/-/g, '+').replace(/_/g, '/')), c => c.charCodeAt(0)));
-  if ((await sign(payload, secret)) !== sig) return null;
-  const session = JSON.parse(payload);
-  if (!session.exp || session.exp < Date.now()) return null;
-  return session;
+  try {
+    if (!secret) return null;
+    const m = cookie.match(/session=([A-Za-z0-9_\-]+)\.([A-Za-z0-9_\-]+)/);
+    if (!m) return null;
+    const [, data, sig] = m;
+    const payload = new TextDecoder().decode(Uint8Array.from(atob(data.replace(/-/g, '+').replace(/_/g, '/')), c => c.charCodeAt(0)));
+    if ((await sign(payload, secret)) !== sig) return null;
+    const session = JSON.parse(payload);
+    if (!session.id || !session.username || !session.exp || session.exp < Date.now()) return null;
+    return session;
+  } catch { return null; }
 }
 
 async function me(env, request) {
@@ -167,7 +170,7 @@ async function guest(env, request) {
     return new Response(null, { status: 302, headers: { Location: '/?error=name' } });
   }
   const payload = JSON.stringify({
-    id: `guest_${b64url(new TextEncoder().encode(name))}`,
+    id: `guest_${b64url(crypto.getRandomValues(new Uint8Array(18)))}`,
     username: name,
     name,
     guest: true,
@@ -202,8 +205,8 @@ async function applyReferral(env, request) {
 
 async function topScores(env, url) {
   if (!env.DB) return json({ error: 'leaderboard_not_configured' }, 503);
-  const limit = Math.min(50, Math.max(1, Number(url.searchParams.get('limit') || 10)));
-  const offset = Math.max(0, Math.floor(Number(url.searchParams.get('offset') || 0)));
+  const limit = Math.min(50, Math.max(1, Number.parseInt(url.searchParams.get('limit'), 10) || 10));
+  const offset = Math.min(10_000, Math.max(0, Number.parseInt(url.searchParams.get('offset'), 10) || 0));
   const daily = url.searchParams.get('board') === 'daily';
   const day = new Date().toISOString().slice(0, 10);
   const source = daily ? 'daily_scores' : 'scores';
@@ -235,9 +238,13 @@ async function startRun(env, request) {
   if (!session) return json({ error: 'login_required' }, 401);
   const now = Date.now();
   const token = b64url(crypto.getRandomValues(new Uint8Array(24)));
-  await env.DB.prepare(
-    'INSERT INTO run_tickets (token, x_id, started_at, expires_at) VALUES (?1, ?2, ?3, ?4)'
-  ).bind(token, session.id, now, now + 1000 * 60 * 30).run();
+  await env.DB.batch([
+    env.DB.prepare('DELETE FROM run_tickets WHERE x_id = ?1 AND used_at IS NOT NULL').bind(session.id),
+    env.DB.prepare('DELETE FROM run_tickets WHERE expires_at < ?1').bind(now),
+    env.DB.prepare('DELETE FROM run_tickets WHERE x_id = ?1 AND used_at IS NULL').bind(session.id),
+    env.DB.prepare('INSERT INTO run_tickets (token, x_id, started_at, expires_at) VALUES (?1, ?2, ?3, ?4)')
+      .bind(token, session.id, now, now + 1000 * 60 * 30),
+  ]);
   const day = new Date(now).toISOString().slice(0, 10);
   let seed = 2166136261;
   for (const c of day) seed = Math.imul(seed ^ c.charCodeAt(0), 16777619) >>> 0;
@@ -255,6 +262,7 @@ async function submitScore(env, request) {
   const runToken = String(body.runToken || '');
   if (!runToken) return json({ error: 'run_required' }, 400);
   if (!Number.isFinite(score) || score < 0 || score > 10_000_000) return json({ error: 'bad_score' }, 400);
+  if (!Number.isFinite(combo) || combo < 0 || combo > 1_000_000) return json({ error: 'bad_combo' }, 400);
   const ticket = await env.DB.prepare(
     'SELECT started_at, expires_at, used_at FROM run_tickets WHERE token = ?1 AND x_id = ?2'
   ).bind(runToken, session.id).first();
@@ -264,31 +272,31 @@ async function submitScore(env, request) {
   if (ticket.expires_at < now) return json({ error: 'run_expired' }, 410);
   const elapsed = Math.max(1, (now - ticket.started_at) / 1000);
   if (score > 500 + elapsed * 250) return json({ error: 'score_rate_invalid' }, 400);
-  const used = await env.DB.prepare(
-    'UPDATE run_tickets SET used_at = ?1 WHERE token = ?2 AND used_at IS NULL'
-  ).bind(now, runToken).run();
-  if (used.meta.changes !== 1) return json({ error: 'run_used' }, 409);
-  await env.DB.prepare(
-    `INSERT INTO scores (x_id, username, name, score, combo, updated_at)
-     VALUES (?1, ?2, ?3, ?4, ?5, ?6)
-     ON CONFLICT(x_id) DO UPDATE SET
-       score = MAX(score, excluded.score),
-       combo = MAX(combo, excluded.combo),
-       username = excluded.username,
-       name = excluded.name,
-       updated_at = excluded.updated_at`
-  ).bind(session.id, session.username, session.name || null, score, combo, now).run();
   const day = new Date(now).toISOString().slice(0, 10);
-  await env.DB.prepare(
-    `INSERT INTO daily_scores (day, x_id, username, name, score, combo, updated_at)
-     VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7)
-     ON CONFLICT(day, x_id) DO UPDATE SET
-       score = MAX(score, excluded.score),
-       combo = MAX(combo, excluded.combo),
-       username = excluded.username,
-       name = excluded.name,
-       updated_at = excluded.updated_at`
-  ).bind(day, session.id, session.username, session.name || null, score, combo, now).run();
+  const used = await env.DB.batch([
+    env.DB.prepare('UPDATE run_tickets SET used_at = ?1 WHERE token = ?2 AND used_at IS NULL').bind(now, runToken),
+    env.DB.prepare(
+      `INSERT INTO scores (x_id, username, name, score, combo, updated_at)
+       VALUES (?1, ?2, ?3, ?4, ?5, ?6)
+       ON CONFLICT(x_id) DO UPDATE SET
+         score = CASE WHEN excluded.score > score THEN excluded.score ELSE score END,
+         combo = CASE WHEN excluded.score > score THEN excluded.combo ELSE combo END,
+         username = excluded.username,
+         name = excluded.name,
+         updated_at = CASE WHEN excluded.score > score THEN excluded.updated_at ELSE updated_at END`
+    ).bind(session.id, session.username, session.name || null, score, combo, now),
+    env.DB.prepare(
+      `INSERT INTO daily_scores (day, x_id, username, name, score, combo, updated_at)
+       VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7)
+       ON CONFLICT(day, x_id) DO UPDATE SET
+         score = CASE WHEN excluded.score > score THEN excluded.score ELSE score END,
+         combo = CASE WHEN excluded.score > score THEN excluded.combo ELSE combo END,
+         username = excluded.username,
+         name = excluded.name,
+         updated_at = CASE WHEN excluded.score > score THEN excluded.updated_at ELSE updated_at END`
+    ).bind(day, session.id, session.username, session.name || null, score, combo, now),
+  ]);
+  if (used[0].meta.changes !== 1) return json({ error: 'run_used' }, 409);
   const rank = await env.DB.prepare(
     'SELECT COUNT(*) + 1 AS rank FROM scores WHERE score > ?1'
   ).bind(score).first();

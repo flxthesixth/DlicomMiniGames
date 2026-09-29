@@ -84,6 +84,12 @@ test('jump starts once and expires after its short duration', () => {
   assert.equal(state.jump, 0);
 });
 
+test('runtime-sized frames accumulate distance score', () => {
+  let state = newGame(7);
+  for (let i = 0; i < 30; i++) state = advance(state, { dt: .04 });
+  assert.equal(state.score, 2);
+});
+
 test('difficulty level rises at score milestones', () => {
   assert.equal(difficultyLevel(0), 1);
   assert.equal(difficultyLevel(499), 1);

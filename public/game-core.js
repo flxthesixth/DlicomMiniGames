@@ -7,7 +7,7 @@ export function newGame(seed = 1, shields = 0) {
   return {
     seed, shields,
     lane: 1,
-    score: 0, combo: 0, bestCombo: 0, puzzlePieces: 0,
+    score: 0, scoreFraction: 0, combo: 0, bestCombo: 0, puzzlePieces: 0,
     multiplier: 1, comboMultiplier: 1, surge: 0, jump: 0, slide: 0,
     lives: 3, invulnerable: 0,
     distance: 0, over: false, dodged: false, destroyed: false, damaged: false,
@@ -82,6 +82,8 @@ export function advance(state, { lane = 0, collect = false, gem = false, puzzle 
     }
   }
 
-  next.score += Math.round(2 * dt); // distance points
+  next.scoreFraction = state.scoreFraction + 2 * dt; // distance points
+  const whole = Math.floor(next.scoreFraction);
+  if (whole) { next.score += whole; next.scoreFraction -= whole; }
   return next;
 }

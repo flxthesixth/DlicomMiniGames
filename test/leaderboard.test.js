@@ -56,15 +56,20 @@ test('game page shows top three leaderboard entries with a full-board link', () 
   assert.ok(html.indexOf('<section class="board"') > html.indexOf('<section class="below"'));
 });
 
-test('full leaderboard page renders all available scores', () => {
+test('full leaderboard page renders all available scores safely', () => {
   const html = readFileSync(new URL('../public/leaderboard.html', import.meta.url), 'utf8');
   assert.match(html, /GLOBAL LEADERBOARD/);
   assert.match(html, /TOP 3 VERIFIED RUNNERS WILL RECEIVE PRIZES FROM DEVELOPER\./);
-  assert.match(html, /x\.verified\?' ✓':''/);
-  assert.match(html, /medals\[x\.prizeRank\]/);
+  assert.match(html, /function scoreRow/);
+  assert.doesNotMatch(html, /insertAdjacentHTML/);
   assert.match(html, /fetch\(`\/api\/scores\?limit=50&offset=\$\{offset\}`\)/);
   assert.match(html, /id="loadMore"[^>]*>LOAD MORE<\/button>/);
   assert.match(html, /href="\/game\.html"[^>]*>BACK TO RUN<\/a>/);
+});
+
+test('score submission validates combo', () => {
+  const worker = readFileSync(new URL('../worker/index.js', import.meta.url), 'utf8');
+  assert.match(worker, /bad_combo/);
 });
 
 test('best run comes from current account and referrals require X login', () => {

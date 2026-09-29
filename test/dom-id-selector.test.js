@@ -192,10 +192,12 @@ test('Retree warns before spawn and gains lane steps with level', () => {
   assert.match(html, /laneMoves<e\.userData\.maxLaneMoves/);
 });
 
-test('combo is compact and base obstacles get denser each level', () => {
+test('combo, level, and lives render while base obstacles get denser each level', () => {
   const html = readFileSync(new URL('../public/game.html', import.meta.url), 'utf8');
   assert.match(html, /id="combo">0X1/);
   assert.match(html, /`\$\{game\.combo\}X\$\{game\.comboMultiplier\}`/);
+  assert.match(html, /levelEl\.textContent=level;livesEl\.textContent=/);
+  assert.doesNotMatch(html, /levellivesEl/);
   assert.match(html, /spawnInterval=Math\.max\(\.4,\.7-\(level-1\)\*\.06\)/);
   assert.match(html, /lastSpawn>spawnInterval/);
 });

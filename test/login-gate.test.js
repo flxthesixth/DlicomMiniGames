@@ -45,7 +45,15 @@ test('worker creates a signed guest session and routes OAuth back to game', () =
   assert.match(worker, /Cache-Control', 'no-store'/);
 });
 
-test('Cloudflare routes auth and API requests through the Worker first', () => {
+test('Cloudflare routes auth, API, and guarded game pages through the Worker first', () => {
   const config = readFileSync(new URL('../wrangler.jsonc', import.meta.url), 'utf8');
-  assert.match(config, /"run_worker_first":\s*\[\s*"\/auth\/\*",\s*"\/api\/\*",\s*"\/logout"\s*\]/);
+  assert.match(config, /"run_worker_first"\s*:\s*\[[^\]]*"\/game\*"[^\]]*\]/);
+  const worker = readFileSync(new URL('../worker/index.js', import.meta.url), 'utf8');
+  assert.match(worker, /\(path === '\/game' \|\| path === '\/game\.html'\)/);
+});
+
+test('guest identities are unique and malformed cookies fail closed', () => {
+  const worker = readFileSync(new URL('../worker/index.js', import.meta.url), 'utf8');
+  assert.match(worker, /guest_\$\{b64url\(crypto\.getRandomValues/);
+  assert.match(worker, /async function verifySession[\s\S]*try \{[\s\S]*catch \{ return null; \}/);
 });
