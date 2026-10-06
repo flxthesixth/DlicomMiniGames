@@ -1,5 +1,6 @@
 # DILI RUN
 
+Live game: https://dlicomgames.flxthe6th.workers.dev/
 Three-lane endless runner. No wallet, no payments — just play.
 
 ## Play
